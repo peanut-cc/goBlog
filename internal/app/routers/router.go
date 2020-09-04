@@ -11,5 +11,4 @@ func NewRouter() *gin.Engine {
 	app := gin.New()
 	app.GET("/", controller.Index)
 	return app
-
 }
