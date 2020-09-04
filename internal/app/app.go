@@ -2,11 +2,15 @@ package app
 
 import (
 	"context"
+	"fmt"
+	"net/http"
 	"os"
 	"os/signal"
 	"sync/atomic"
 	"syscall"
 	"time"
+
+	"github.com/peanut-cc/goBlog/internal/app/routers"
 
 	"github.com/peanut-cc/goBlog/pkg/logger"
 
@@ -49,9 +53,39 @@ func Init(ctx context.Context, opts ...Option) (func(), error) {
 	if err != nil {
 		return nil, err
 	}
+
+	router := routers.NewRouter()
+	httpServerCleanFunc := InitHttpServer(ctx, router)
+
 	return func() {
 		loggerCleanFunc()
+		httpServerCleanFunc()
 	}, nil
+}
+
+// 初始化 http server
+func InitHttpServer(ctx context.Context, handle http.Handler) func() {
+	cfg := config.C.Server
+	addr := fmt.Sprintf(":%d", cfg.HTTPPort)
+	srv := &http.Server{
+		Addr:    addr,
+		Handler: handle,
+	}
+	go func() {
+		logger.Printf(ctx, "HTTP server is running at %s.", addr)
+		err := srv.ListenAndServe()
+		if err != nil {
+			panic(err)
+		}
+	}()
+	return func() {
+		ctx, cancel := context.WithTimeout(ctx, time.Second*time.Duration(cfg.ShutdownTimeout))
+		defer cancel()
+		srv.SetKeepAlivesEnabled(false)
+		if err := srv.Shutdown(ctx); err != nil {
+			logger.Errorf(ctx, err.Error())
+		}
+	}
 }
 
 func Run(ctx context.Context, opts ...Option) error {

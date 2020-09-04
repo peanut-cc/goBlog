@@ -66,8 +66,9 @@ type Config struct {
 }
 
 type Server struct {
-	RunMode  string
-	HTTPPort int
+	RunMode         string
+	HTTPPort        int
+	ShutdownTimeout int
 }
 
 type Blog struct {

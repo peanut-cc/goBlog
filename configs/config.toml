@@ -5,6 +5,8 @@ PrintConfig = true
 [server]
 RunMode = "debug"
 HTTPPort = 8000
+# http优雅关闭等待超时时长(单位秒)
+ShutdownTimeout = 30
 
 
 [Blog]
