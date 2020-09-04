@@ -54,7 +54,7 @@ func Init(ctx context.Context, opts ...Option) (func(), error) {
 		return nil, err
 	}
 
-	router := routers.NewRouter()
+	router := routers.NewRouter(ctx)
 	httpServerCleanFunc := InitHttpServer(ctx, router)
 
 	return func() {

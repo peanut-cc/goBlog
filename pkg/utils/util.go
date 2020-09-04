@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"io/ioutil"
+	"path"
 	"reflect"
 
 	"github.com/LyricTian/structs"
@@ -30,4 +32,23 @@ func StructMapToStruct(s, ts interface{}) error {
 	}
 
 	return nil
+}
+
+// 读取目录
+func ReadDir(dir string, filter func(name string) bool) (files []string) {
+	fis, err := ioutil.ReadDir(dir)
+	if err != nil {
+		return
+	}
+	for _, fi := range fis {
+		if filter(fi.Name()) {
+			continue
+		}
+		if fi.IsDir() {
+			files = append(files, ReadDir(path.Join(dir, fi.Name()), filter)...)
+			continue
+		}
+		files = append(files, path.Join(dir, fi.Name()))
+	}
+	return
 }
