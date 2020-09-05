@@ -38,6 +38,14 @@ func (uc *UserCreate) SetToken(s string) *UserCreate {
 	return uc
 }
 
+// SetNillableToken sets the token field if the given value is not nil.
+func (uc *UserCreate) SetNillableToken(s *string) *UserCreate {
+	if s != nil {
+		uc.SetToken(*s)
+	}
+	return uc
+}
+
 // SetEmail sets the email field.
 func (uc *UserCreate) SetEmail(s string) *UserCreate {
 	uc.mutation.SetEmail(s)
@@ -56,9 +64,25 @@ func (uc *UserCreate) SetLoginTime(t time.Time) *UserCreate {
 	return uc
 }
 
+// SetNillableLoginTime sets the login_time field if the given value is not nil.
+func (uc *UserCreate) SetNillableLoginTime(t *time.Time) *UserCreate {
+	if t != nil {
+		uc.SetLoginTime(*t)
+	}
+	return uc
+}
+
 // SetLogoutTime sets the logout_time field.
 func (uc *UserCreate) SetLogoutTime(t time.Time) *UserCreate {
 	uc.mutation.SetLogoutTime(t)
+	return uc
+}
+
+// SetNillableLogoutTime sets the logout_time field if the given value is not nil.
+func (uc *UserCreate) SetNillableLogoutTime(t *time.Time) *UserCreate {
+	if t != nil {
+		uc.SetLogoutTime(*t)
+	}
 	return uc
 }
 
@@ -115,20 +139,11 @@ func (uc *UserCreate) preSave() error {
 	if _, ok := uc.mutation.Password(); !ok {
 		return &ValidationError{Name: "password", err: errors.New("ent: missing required field \"password\"")}
 	}
-	if _, ok := uc.mutation.Token(); !ok {
-		return &ValidationError{Name: "token", err: errors.New("ent: missing required field \"token\"")}
-	}
 	if _, ok := uc.mutation.Email(); !ok {
 		return &ValidationError{Name: "email", err: errors.New("ent: missing required field \"email\"")}
 	}
 	if _, ok := uc.mutation.Phone(); !ok {
 		return &ValidationError{Name: "phone", err: errors.New("ent: missing required field \"phone\"")}
-	}
-	if _, ok := uc.mutation.LoginTime(); !ok {
-		return &ValidationError{Name: "login_time", err: errors.New("ent: missing required field \"login_time\"")}
-	}
-	if _, ok := uc.mutation.LogoutTime(); !ok {
-		return &ValidationError{Name: "logout_time", err: errors.New("ent: missing required field \"logout_time\"")}
 	}
 	return nil
 }

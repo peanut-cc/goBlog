@@ -1695,9 +1695,22 @@ func (m *UserMutation) OldToken(ctx context.Context) (v string, err error) {
 	return oldValue.Token, nil
 }
 
+// ClearToken clears the value of token.
+func (m *UserMutation) ClearToken() {
+	m.token = nil
+	m.clearedFields[user.FieldToken] = struct{}{}
+}
+
+// TokenCleared returns if the field token was cleared in this mutation.
+func (m *UserMutation) TokenCleared() bool {
+	_, ok := m.clearedFields[user.FieldToken]
+	return ok
+}
+
 // ResetToken reset all changes of the "token" field.
 func (m *UserMutation) ResetToken() {
 	m.token = nil
+	delete(m.clearedFields, user.FieldToken)
 }
 
 // SetEmail sets the email field.
@@ -1806,9 +1819,22 @@ func (m *UserMutation) OldLoginTime(ctx context.Context) (v time.Time, err error
 	return oldValue.LoginTime, nil
 }
 
+// ClearLoginTime clears the value of login_time.
+func (m *UserMutation) ClearLoginTime() {
+	m.login_time = nil
+	m.clearedFields[user.FieldLoginTime] = struct{}{}
+}
+
+// LoginTimeCleared returns if the field login_time was cleared in this mutation.
+func (m *UserMutation) LoginTimeCleared() bool {
+	_, ok := m.clearedFields[user.FieldLoginTime]
+	return ok
+}
+
 // ResetLoginTime reset all changes of the "login_time" field.
 func (m *UserMutation) ResetLoginTime() {
 	m.login_time = nil
+	delete(m.clearedFields, user.FieldLoginTime)
 }
 
 // SetLogoutTime sets the logout_time field.
@@ -1843,9 +1869,22 @@ func (m *UserMutation) OldLogoutTime(ctx context.Context) (v time.Time, err erro
 	return oldValue.LogoutTime, nil
 }
 
+// ClearLogoutTime clears the value of logout_time.
+func (m *UserMutation) ClearLogoutTime() {
+	m.logout_time = nil
+	m.clearedFields[user.FieldLogoutTime] = struct{}{}
+}
+
+// LogoutTimeCleared returns if the field logout_time was cleared in this mutation.
+func (m *UserMutation) LogoutTimeCleared() bool {
+	_, ok := m.clearedFields[user.FieldLogoutTime]
+	return ok
+}
+
 // ResetLogoutTime reset all changes of the "logout_time" field.
 func (m *UserMutation) ResetLogoutTime() {
 	m.logout_time = nil
+	delete(m.clearedFields, user.FieldLogoutTime)
 }
 
 // Op returns the operation name.
@@ -2016,7 +2055,17 @@ func (m *UserMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared
 // during this mutation.
 func (m *UserMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(user.FieldToken) {
+		fields = append(fields, user.FieldToken)
+	}
+	if m.FieldCleared(user.FieldLoginTime) {
+		fields = append(fields, user.FieldLoginTime)
+	}
+	if m.FieldCleared(user.FieldLogoutTime) {
+		fields = append(fields, user.FieldLogoutTime)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicates if this field was
@@ -2029,6 +2078,17 @@ func (m *UserMutation) FieldCleared(name string) bool {
 // ClearField clears the value for the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *UserMutation) ClearField(name string) error {
+	switch name {
+	case user.FieldToken:
+		m.ClearToken()
+		return nil
+	case user.FieldLoginTime:
+		m.ClearLoginTime()
+		return nil
+	case user.FieldLogoutTime:
+		m.ClearLogoutTime()
+		return nil
+	}
 	return fmt.Errorf("unknown User nullable field %s", name)
 }
 

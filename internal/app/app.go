@@ -10,8 +10,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/peanut-cc/goBlog/internal/app/ent"
+	"github.com/peanut-cc/goBlog/internal/app/ent/user"
+	"github.com/peanut-cc/goBlog/pkg/utils"
 
+	"github.com/peanut-cc/goBlog/internal/app/ent"
+	"github.com/peanut-cc/goBlog/internal/app/ent/migrate"
 	"github.com/peanut-cc/goBlog/internal/app/routers"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -69,6 +72,7 @@ func Init(ctx context.Context, opts ...Option) (func(), error) {
 		loggerCleanFunc()
 		return nil, err
 	}
+	loadAdminUser(ctx)
 	return func() {
 		entOrmCleanFunc()
 		loggerCleanFunc()
@@ -102,8 +106,9 @@ func InitHttpServer(ctx context.Context, handle http.Handler) func() {
 }
 
 func InitEntOrm() (func(), error) {
+	var err error
 	cfg := config.C.MySQL
-	entClient, err := ent.Open("mysql", cfg.DSN())
+	entClient, err = ent.Open("mysql", cfg.DSN())
 	if err != nil {
 		logger.Errorf(context.Background(), "Ent orm open db error:%v", err.Error())
 		return nil, err
@@ -116,12 +121,31 @@ func InitEntOrm() (func(), error) {
 	}
 
 	// run the auto migration tool
-	err = entClient.Schema.Create(context.Background())
+	err = entClient.Schema.Create(
+		context.Background(),
+		migrate.WithDropIndex(true),
+		migrate.WithDropColumn(true),
+	)
 	if err != nil {
 		logger.Errorf(context.Background(), "Ent orm create schema resources:%v", err)
 		return cleanFunc, err
 	}
 	return cleanFunc, nil
+}
+
+// 初始化admin用户的信息到数据库
+func loadAdminUser(ctx context.Context) {
+	admin, err := entClient.User.Query().Where(user.UsernameEQ(config.C.Blog.UserName)).Only(ctx)
+	if err != nil {
+		logger.Printf(ctx, "Initializing admin user:%v", config.C.Blog.UserName)
+		entClient.User.Create().
+			SetUsername(config.C.Blog.UserName).
+			SetPassword(utils.EncryptPasswd(config.C.Blog.UserName, config.C.Blog.Password)).
+			SetEmail(config.C.Blog.Email).
+			SetPhone(config.C.Blog.Phone).SaveX(ctx)
+	} else {
+		logger.Printf(ctx, "admin user is %v", admin.Username)
+	}
 }
 
 func Run(ctx context.Context, opts ...Option) error {

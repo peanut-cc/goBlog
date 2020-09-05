@@ -1,6 +1,9 @@
 package utils
 
 import (
+	"crypto/sha256"
+	"fmt"
+	"io"
 	"io/ioutil"
 	"path"
 	"reflect"
@@ -51,4 +54,14 @@ func ReadDir(dir string, filter func(name string) bool) (files []string) {
 		files = append(files, path.Join(dir, fi.Name()))
 	}
 	return
+}
+
+// encrypt password
+func EncryptPasswd(name, pass string) string {
+	salt := "%$@w*)("
+	h := sha256.New()
+	io.WriteString(h, name)
+	io.WriteString(h, salt)
+	io.WriteString(h, pass)
+	return fmt.Sprintf("%x", h.Sum(nil))
 }

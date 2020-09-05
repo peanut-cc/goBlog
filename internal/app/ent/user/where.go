@@ -460,6 +460,20 @@ func TokenHasSuffix(v string) predicate.User {
 	})
 }
 
+// TokenIsNil applies the IsNil predicate on the "token" field.
+func TokenIsNil() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldToken)))
+	})
+}
+
+// TokenNotNil applies the NotNil predicate on the "token" field.
+func TokenNotNil() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldToken)))
+	})
+}
+
 // TokenEqualFold applies the EqualFold predicate on the "token" field.
 func TokenEqualFold(v string) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
@@ -772,6 +786,20 @@ func LoginTimeLTE(v time.Time) predicate.User {
 	})
 }
 
+// LoginTimeIsNil applies the IsNil predicate on the "login_time" field.
+func LoginTimeIsNil() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldLoginTime)))
+	})
+}
+
+// LoginTimeNotNil applies the NotNil predicate on the "login_time" field.
+func LoginTimeNotNil() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldLoginTime)))
+	})
+}
+
 // LogoutTimeEQ applies the EQ predicate on the "logout_time" field.
 func LogoutTimeEQ(v time.Time) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
@@ -845,6 +873,20 @@ func LogoutTimeLT(v time.Time) predicate.User {
 func LogoutTimeLTE(v time.Time) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldLogoutTime), v))
+	})
+}
+
+// LogoutTimeIsNil applies the IsNil predicate on the "logout_time" field.
+func LogoutTimeIsNil() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldLogoutTime)))
+	})
+}
+
+// LogoutTimeNotNil applies the NotNil predicate on the "logout_time" field.
+func LogoutTimeNotNil() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldLogoutTime)))
 	})
 }
 

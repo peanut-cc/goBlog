@@ -76,6 +76,7 @@ type Blog struct {
 	UserName       string
 	Password       string
 	Email          string
+	Phone          string
 	BlogName       string
 	subtitle       string
 	beian          string

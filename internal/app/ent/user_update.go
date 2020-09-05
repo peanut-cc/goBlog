@@ -46,6 +46,20 @@ func (uu *UserUpdate) SetToken(s string) *UserUpdate {
 	return uu
 }
 
+// SetNillableToken sets the token field if the given value is not nil.
+func (uu *UserUpdate) SetNillableToken(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetToken(*s)
+	}
+	return uu
+}
+
+// ClearToken clears the value of token.
+func (uu *UserUpdate) ClearToken() *UserUpdate {
+	uu.mutation.ClearToken()
+	return uu
+}
+
 // SetEmail sets the email field.
 func (uu *UserUpdate) SetEmail(s string) *UserUpdate {
 	uu.mutation.SetEmail(s)
@@ -64,9 +78,37 @@ func (uu *UserUpdate) SetLoginTime(t time.Time) *UserUpdate {
 	return uu
 }
 
+// SetNillableLoginTime sets the login_time field if the given value is not nil.
+func (uu *UserUpdate) SetNillableLoginTime(t *time.Time) *UserUpdate {
+	if t != nil {
+		uu.SetLoginTime(*t)
+	}
+	return uu
+}
+
+// ClearLoginTime clears the value of login_time.
+func (uu *UserUpdate) ClearLoginTime() *UserUpdate {
+	uu.mutation.ClearLoginTime()
+	return uu
+}
+
 // SetLogoutTime sets the logout_time field.
 func (uu *UserUpdate) SetLogoutTime(t time.Time) *UserUpdate {
 	uu.mutation.SetLogoutTime(t)
+	return uu
+}
+
+// SetNillableLogoutTime sets the logout_time field if the given value is not nil.
+func (uu *UserUpdate) SetNillableLogoutTime(t *time.Time) *UserUpdate {
+	if t != nil {
+		uu.SetLogoutTime(*t)
+	}
+	return uu
+}
+
+// ClearLogoutTime clears the value of logout_time.
+func (uu *UserUpdate) ClearLogoutTime() *UserUpdate {
+	uu.mutation.ClearLogoutTime()
 	return uu
 }
 
@@ -165,6 +207,12 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: user.FieldToken,
 		})
 	}
+	if uu.mutation.TokenCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: user.FieldToken,
+		})
+	}
 	if value, ok := uu.mutation.Email(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -186,10 +234,22 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: user.FieldLoginTime,
 		})
 	}
+	if uu.mutation.LoginTimeCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Column: user.FieldLoginTime,
+		})
+	}
 	if value, ok := uu.mutation.LogoutTime(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
 			Value:  value,
+			Column: user.FieldLogoutTime,
+		})
+	}
+	if uu.mutation.LogoutTimeCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
 			Column: user.FieldLogoutTime,
 		})
 	}
@@ -229,6 +289,20 @@ func (uuo *UserUpdateOne) SetToken(s string) *UserUpdateOne {
 	return uuo
 }
 
+// SetNillableToken sets the token field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableToken(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetToken(*s)
+	}
+	return uuo
+}
+
+// ClearToken clears the value of token.
+func (uuo *UserUpdateOne) ClearToken() *UserUpdateOne {
+	uuo.mutation.ClearToken()
+	return uuo
+}
+
 // SetEmail sets the email field.
 func (uuo *UserUpdateOne) SetEmail(s string) *UserUpdateOne {
 	uuo.mutation.SetEmail(s)
@@ -247,9 +321,37 @@ func (uuo *UserUpdateOne) SetLoginTime(t time.Time) *UserUpdateOne {
 	return uuo
 }
 
+// SetNillableLoginTime sets the login_time field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableLoginTime(t *time.Time) *UserUpdateOne {
+	if t != nil {
+		uuo.SetLoginTime(*t)
+	}
+	return uuo
+}
+
+// ClearLoginTime clears the value of login_time.
+func (uuo *UserUpdateOne) ClearLoginTime() *UserUpdateOne {
+	uuo.mutation.ClearLoginTime()
+	return uuo
+}
+
 // SetLogoutTime sets the logout_time field.
 func (uuo *UserUpdateOne) SetLogoutTime(t time.Time) *UserUpdateOne {
 	uuo.mutation.SetLogoutTime(t)
+	return uuo
+}
+
+// SetNillableLogoutTime sets the logout_time field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableLogoutTime(t *time.Time) *UserUpdateOne {
+	if t != nil {
+		uuo.SetLogoutTime(*t)
+	}
+	return uuo
+}
+
+// ClearLogoutTime clears the value of logout_time.
+func (uuo *UserUpdateOne) ClearLogoutTime() *UserUpdateOne {
+	uuo.mutation.ClearLogoutTime()
 	return uuo
 }
 
@@ -346,6 +448,12 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (u *User, err error) {
 			Column: user.FieldToken,
 		})
 	}
+	if uuo.mutation.TokenCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: user.FieldToken,
+		})
+	}
 	if value, ok := uuo.mutation.Email(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -367,10 +475,22 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (u *User, err error) {
 			Column: user.FieldLoginTime,
 		})
 	}
+	if uuo.mutation.LoginTimeCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Column: user.FieldLoginTime,
+		})
+	}
 	if value, ok := uuo.mutation.LogoutTime(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
 			Value:  value,
+			Column: user.FieldLogoutTime,
+		})
+	}
+	if uuo.mutation.LogoutTimeCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
 			Column: user.FieldLogoutTime,
 		})
 	}
