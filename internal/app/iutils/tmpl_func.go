@@ -1,4 +1,4 @@
-package utils
+package iutils
 
 import (
 	"html/template"

@@ -21,10 +21,7 @@ import (
 	"github.com/peanut-cc/goBlog/pkg/logger"
 
 	"github.com/peanut-cc/goBlog/internal/app/config"
-)
-
-var (
-	entClient *ent.Client
+	"github.com/peanut-cc/goBlog/internal/app/global"
 )
 
 type options struct {
@@ -108,20 +105,20 @@ func InitHttpServer(ctx context.Context, handle http.Handler) func() {
 func InitEntOrm() (func(), error) {
 	var err error
 	cfg := config.C.MySQL
-	entClient, err = ent.Open("mysql", cfg.DSN())
+	global.EntClient, err = ent.Open("mysql", cfg.DSN())
 	if err != nil {
 		logger.Errorf(context.Background(), "Ent orm open db error:%v", err.Error())
 		return nil, err
 	}
 	cleanFunc := func() {
-		err := entClient.Close()
+		err := global.EntClient.Close()
 		if err != nil {
 			logger.Errorf(context.Background(), "Ent orm closed error:%v", err.Error())
 		}
 	}
 
 	// run the auto migration tool
-	err = entClient.Schema.Create(
+	err = global.EntClient.Schema.Create(
 		context.Background(),
 		migrate.WithDropIndex(true),
 		migrate.WithDropColumn(true),
@@ -135,10 +132,10 @@ func InitEntOrm() (func(), error) {
 
 // 初始化admin用户的信息到数据库
 func loadAdminUser(ctx context.Context) {
-	admin, err := entClient.User.Query().Where(user.UsernameEQ(config.C.Blog.UserName)).Only(ctx)
+	admin, err := global.EntClient.User.Query().Where(user.UsernameEQ(config.C.Blog.UserName)).Only(ctx)
 	if err != nil {
 		logger.Printf(ctx, "Initializing admin user:%v", config.C.Blog.UserName)
-		entClient.User.Create().
+		global.EntClient.User.Create().
 			SetUsername(config.C.Blog.UserName).
 			SetPassword(utils.EncryptPasswd(config.C.Blog.UserName, config.C.Blog.Password)).
 			SetEmail(config.C.Blog.Email).

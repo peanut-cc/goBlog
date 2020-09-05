@@ -8,6 +8,8 @@ import (
 	"path"
 	"reflect"
 
+	"github.com/google/uuid"
+
 	"github.com/LyricTian/structs"
 )
 
@@ -64,4 +66,21 @@ func EncryptPasswd(name, pass string) string {
 	io.WriteString(h, salt)
 	io.WriteString(h, pass)
 	return fmt.Sprintf("%x", h.Sum(nil))
+}
+
+// UUID Define alias
+type UUID = uuid.UUID
+
+// NewUUID Create uuid
+func NewUUID() (UUID, error) {
+	return uuid.NewRandom()
+}
+
+// MustUUID Create uuid(Throw panic if something goes wrong)
+func MustUUID() string {
+	v, err := NewUUID()
+	if err != nil {
+		panic(err)
+	}
+	return v.String()
 }
