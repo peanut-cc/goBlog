@@ -10,11 +10,18 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/peanut-cc/goBlog/internal/app/ent"
+
 	"github.com/peanut-cc/goBlog/internal/app/routers"
 
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/peanut-cc/goBlog/pkg/logger"
 
 	"github.com/peanut-cc/goBlog/internal/app/config"
+)
+
+var (
+	entClient *ent.Client
 )
 
 type options struct {
@@ -57,7 +64,13 @@ func Init(ctx context.Context, opts ...Option) (func(), error) {
 	router := routers.NewRouter(ctx)
 	httpServerCleanFunc := InitHttpServer(ctx, router)
 
+	entOrmCleanFunc, err := InitEntOrm()
+	if err != nil {
+		loggerCleanFunc()
+		return nil, err
+	}
 	return func() {
+		entOrmCleanFunc()
 		loggerCleanFunc()
 		httpServerCleanFunc()
 	}, nil
@@ -74,7 +87,7 @@ func InitHttpServer(ctx context.Context, handle http.Handler) func() {
 	go func() {
 		logger.Printf(ctx, "HTTP server is running at %s.", addr)
 		err := srv.ListenAndServe()
-		if err != nil {
+		if err != nil && err != http.ErrServerClosed {
 			panic(err)
 		}
 	}()
@@ -86,6 +99,29 @@ func InitHttpServer(ctx context.Context, handle http.Handler) func() {
 			logger.Errorf(ctx, err.Error())
 		}
 	}
+}
+
+func InitEntOrm() (func(), error) {
+	cfg := config.C.MySQL
+	entClient, err := ent.Open("mysql", cfg.DSN())
+	if err != nil {
+		logger.Errorf(context.Background(), "Ent orm open db error:%v", err.Error())
+		return nil, err
+	}
+	cleanFunc := func() {
+		err := entClient.Close()
+		if err != nil {
+			logger.Errorf(context.Background(), "Ent orm closed error:%v", err.Error())
+		}
+	}
+
+	// run the auto migration tool
+	err = entClient.Schema.Create(context.Background())
+	if err != nil {
+		logger.Errorf(context.Background(), "Ent orm create schema resources:%v", err)
+		return cleanFunc, err
+	}
+	return cleanFunc, nil
 }
 
 func Run(ctx context.Context, opts ...Option) error {
