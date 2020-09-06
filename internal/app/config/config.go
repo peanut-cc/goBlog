@@ -78,10 +78,10 @@ type Blog struct {
 	Email          string
 	Phone          string
 	BlogName       string
-	subtitle       string
-	beian          string
-	btitle         string
-	copyright      string
+	SubTitle       string
+	BeiAn          string
+	BTitle         string
+	Copyright      string
 }
 
 type Log struct {

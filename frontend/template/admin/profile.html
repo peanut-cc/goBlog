@@ -3,11 +3,11 @@
     <div class="typecho-page-title">
         <h2>个人设置</h2>
     </div>
-    {{with .Account}}
+{{/*    {{with .Account}}*/}}
     <div class="row typecho-page-main">
         <div class="col-mb-12 col-tb-3">
             <p>
-	    <img class="profile-avatar" src="//{{$.Qiniu.Domain}}/static/img/avatar.png" alt="{{.BlogName}}" />
+	    <img class="profile-avatar" src="//st.deepzz.com/static/img/avatar.png" alt="{{.BlogName}}" />
             </p>
             <h2>{{.BlogName}}</h2>
             <p>{{.SubTitle}}</p>
@@ -30,7 +30,7 @@
                         <li>
                             <label class="typecho-label" for="info-0-2">
                                 移动电话</label>
-                            <input id="info-0-2" name="phoneNumber" type="text" class="text" value="{{.PhoneN}}" />
+                            <input id="info-0-2" name="phoneNumber" type="text" class="text" value="{{.Phone}}" />
                             <p class="description">
                                 选择填写, 如: ＋8615123456789.</p>
                         </li>
@@ -161,6 +161,6 @@
             </section>
         </div>
     </div>
-    {{end}}
+{{/*    {{end}}*/}}
 </div>
 {{end}}

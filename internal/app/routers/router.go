@@ -60,7 +60,7 @@ func NewRouter(ctx context.Context) *gin.Engine {
 	admin := app.Group("/admin")
 	auth := admin.Use(middleware.AuthFilter())
 	{
-		auth.GET("/index", controller.Index)
+		auth.GET("/profile", controller.HandleProfile)
 	}
 
 	return app

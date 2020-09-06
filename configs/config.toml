@@ -4,7 +4,7 @@ PrintConfig = true
 
 [server]
 RunMode = "debug"
-HTTPPort = 8000
+HTTPPort = 9090
 # http优雅关闭等待超时时长(单位秒)
 ShutdownTimeout = 30
 

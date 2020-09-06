@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/peanut-cc/goBlog/internal/app/config"
+
 	"github.com/peanut-cc/goBlog/internal/app/global"
 
 	"github.com/peanut-cc/goBlog/internal/app/iutils"
@@ -25,7 +27,7 @@ func HandleLogin(c *gin.Context) {
 		session.Delete("username")
 		session.Save()
 	} else if iutils.IsLogin(c) {
-		c.Redirect(http.StatusFound, "/admin/index")
+		c.Redirect(http.StatusFound, "/admin/profile")
 		return
 	}
 	c.Status(http.StatusOK)
@@ -61,8 +63,26 @@ func HandleLoginPost(c *gin.Context) {
 	if err != nil {
 		logger.Warnf(c, "admin user update login time error: %v", err)
 	}
-	c.Redirect(http.StatusFound, "/admin/index")
+	c.Redirect(http.StatusFound, "/admin/profile")
 
+}
+
+func HandleProfile(c *gin.Context) {
+	admin, err := global.EntClient.User.Query().Where(iuser.UsernameEQ(config.C.Blog.UserName)).Only(c)
+	if err != nil {
+		logger.Errorf(c, "ent orm query user name is: %v error:%v", config.C.Blog.UserName, err)
+		c.Redirect(http.StatusFound, "/admin/login")
+		return
+	}
+	c.Status(http.StatusOK)
+	RenderHTMLBack(c, "admin-profile", gin.H{
+		"Console":  true,
+		"Path":     c.Request.URL.Path,
+		"Title":    "个人配置 | " + config.C.Blog.BTitle,
+		"BlogName": config.C.Blog.BlogName,
+
+		"Account": admin,
+	})
 }
 
 // 渲染 html
