@@ -38,7 +38,7 @@ OutputFile = "logs/blog.log"
 
 [MySQL]
 # 连接地址
-Host = "10.211.55.3"
+Host = "192.168.1.106"
 # 连接端口
 Port= 3306
 # 用户名

@@ -108,3 +108,17 @@ func RenderHTMLBack(c *gin.Context, name string, data gin.H) {
 	}
 	c.Header("Content-Type", "text/html; charset=utf-8")
 }
+
+// api
+func HandleAPI(c *gin.Context) {
+	action := c.Param("action")
+	logger.Debugf(c, "handle api action is: %v", action)
+	api := APIs[action]
+	if api == nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "Invalid API Request",
+		})
+		return
+	}
+	api(c)
+}

@@ -61,6 +61,7 @@ func NewRouter(ctx context.Context) *gin.Engine {
 	auth := admin.Use(middleware.AuthFilter())
 	{
 		auth.GET("/profile", controller.HandleProfile)
+		auth.POST("/api/:action", controller.HandleAPI)
 	}
 
 	return app
