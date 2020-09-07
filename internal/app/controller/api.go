@@ -26,6 +26,7 @@ var APIs = make(map[string]func(c *gin.Context))
 func init() {
 	// 更新帐号信息
 	APIs["account"] = apiAccount
+	APIs["blog"] = apiBlog
 }
 
 func apiAccount(c *gin.Context) {
@@ -44,6 +45,36 @@ func apiAccount(c *gin.Context) {
 		return
 	}
 	responseNotice(c, NOTICE_SUCCESS, "更新成功", "")
+}
+
+func apiBlog(c *gin.Context) {
+	blogName := c.PostForm("blogName")
+	bTitle := c.PostForm("bTitle")
+	beian := c.PostForm("beiAn")
+	subTitle := c.PostForm("subTitle")
+	copyRight := c.PostForm("beiAn")
+	if blogName == "" || bTitle == "" || copyRight == "" {
+		responseNotice(c, NOTICE_NOTICE, "参数错误", "")
+		return
+	}
+	blogInfo, err := global.EntClient.Blog.Query().First(c)
+	if err != nil {
+		logger.Errorf(c, "query blog info error:%v", err.Error())
+		responseNotice(c, NOTICE_NOTICE, err.Error(), "")
+		return
+	}
+	_, err = blogInfo.Update().
+		SetBlogName(blogName).
+		SetBeian(beian).SetBtitle(bTitle).
+		SetSubtitle(subTitle).
+		SetBeian(beian).
+		Save(c)
+	if err != nil {
+		logger.Errorf(c, "blog info update error:%v", err.Error())
+		responseNotice(c, NOTICE_NOTICE, err.Error(), "")
+		return
+	}
+	responseNotice(c, NOTICE_NOTICE, "更新成功", "")
 }
 
 func responseNotice(c *gin.Context, typ, content, hl string) {

@@ -40,28 +40,27 @@ func HandleLoginPost(c *gin.Context) {
 	user := c.PostForm("user")
 	pwd := c.PostForm("password")
 	if user == "" || pwd == "" {
-		logger.Errorf(c, "用户名或密码参数错误:username=%v,password=%s", user, pwd)
+		logger.StartSpan(c, logger.SetSpanFuncName("HandleLoginPost")).Errorf("用户名或密码参数错误:username=%v,password=%s", user, pwd)
 		c.Redirect(http.StatusFound, "/admin/login")
 		return
 	}
 	admin, err := global.EntClient.User.Query().Where(iuser.UsernameEQ(user)).Only(c)
 	if err != nil {
-		logger.Errorf(c, "ent orm query user name is: %v error:%v", user, err)
+		logger.StartSpan(c, logger.SetSpanFuncName("HandleLoginPost")).Errorf("ent orm query user name is: %v error:%v", user, err)
 		c.Redirect(http.StatusFound, "/admin/login")
 		return
 	}
 	if !iutils.VerifyPasswd(admin.Password, user, pwd) {
-		logger.Errorf(c, "用户名或密码参数错误:username=%v,password=%s", user, pwd)
+		logger.StartSpan(c, logger.SetSpanFuncName("HandleLoginPost")).Errorf("用户名或密码参数错误:username=%v,password=%s", user, pwd)
 		c.Redirect(http.StatusFound, "/admin/login")
 		return
 	}
 	session := sessions.Default(c)
 	session.Set("username", user)
 	err = session.Save()
-	logger.Warnf(c, "---%v", err)
 	_, err = admin.Update().SetLoginTime(time.Now()).Save(c)
 	if err != nil {
-		logger.Warnf(c, "admin user update login time error: %v", err)
+		logger.StartSpan(c, logger.SetSpanFuncName("HandleLoginPost")).Warnf("admin user update login time error: %v", err)
 	}
 	c.Redirect(http.StatusFound, "/admin/profile")
 

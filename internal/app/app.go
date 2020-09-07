@@ -53,8 +53,7 @@ func Init(ctx context.Context, opts ...Option) (func(), error) {
 	}
 	config.MustLoad(o.ConfigFile)
 	config.PrintWithJSON()
-
-	logger.Printf(ctx, "服务启动，运行模式：%s，版本号：%s，进程号：%d", config.C.Server.RunMode, o.Version, os.Getpid())
+	logger.StartSpan(ctx, logger.SetSpanFuncName("init")).Infof("服务启动，运行模式：%s，版本号：%s，进程号：%d", config.C.Server.RunMode, o.Version, os.Getpid())
 	// 初始化日志模块
 	loggerCleanFunc, err := InitLogger()
 	if err != nil {
