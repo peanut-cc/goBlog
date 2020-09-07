@@ -85,6 +85,28 @@ func HandleProfile(c *gin.Context) {
 	})
 }
 
+func HandlePost(c *gin.Context) {
+	blogInfo, err := global.EntClient.Blog.Query().First(c)
+	if err != nil {
+		logger.Errorf(c, "ent orm query blog info error:%v", err.Error())
+		c.Redirect(http.StatusFound, "/admin/profile")
+		return
+	}
+	tags, err := global.EntClient.Tag.Query().All(c)
+	if err != nil {
+		logger.Errorf(c, "ent orm query tag error:%v", err.Error())
+		c.Redirect(http.StatusFound, "/admin/profile")
+		return
+	}
+	c.Status(http.StatusOK)
+	RenderHTMLBack(c, "admin-post", gin.H{
+		"Title":  "撰写文章 | " + blogInfo.Btitle,
+		"Path":   c.Request.URL.Path,
+		"Tags":   tags,
+		"Domain": "127.0.0.1",
+	})
+}
+
 // 渲染 html
 func RenderHTMLBack(c *gin.Context, name string, data gin.H) {
 	if name == "login.html" {
