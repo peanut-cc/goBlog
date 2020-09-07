@@ -8,6 +8,23 @@ import (
 )
 
 var (
+	// BlogsColumns holds the columns for the "blogs" table.
+	BlogsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "default_page_num", Type: field.TypeInt},
+		{Name: "blog_name", Type: field.TypeString},
+		{Name: "btitle", Type: field.TypeString},
+		{Name: "subtitle", Type: field.TypeString},
+		{Name: "beian", Type: field.TypeString},
+		{Name: "copy_right", Type: field.TypeString},
+	}
+	// BlogsTable holds the schema information for the "blogs" table.
+	BlogsTable = &schema.Table{
+		Name:        "blogs",
+		Columns:     BlogsColumns,
+		PrimaryKey:  []*schema.Column{BlogsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{},
+	}
 	// CategoriesColumns holds the columns for the "categories" table.
 	CategoriesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -105,6 +122,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		BlogsTable,
 		CategoriesTable,
 		PostsTable,
 		TagsTable,

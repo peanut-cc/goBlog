@@ -9,6 +9,19 @@ import (
 	"github.com/peanut-cc/goBlog/internal/app/ent"
 )
 
+// The BlogFunc type is an adapter to allow the use of ordinary
+// function as Blog mutator.
+type BlogFunc func(context.Context, *ent.BlogMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f BlogFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.BlogMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.BlogMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The CategoryFunc type is an adapter to allow the use of ordinary
 // function as Category mutator.
 type CategoryFunc func(context.Context, *ent.CategoryMutation) (ent.Value, error)

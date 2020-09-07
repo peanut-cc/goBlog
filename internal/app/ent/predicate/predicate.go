@@ -6,6 +6,9 @@ import (
 	"github.com/facebook/ent/dialect/sql"
 )
 
+// Blog is the predicate function for blog builders.
+type Blog func(*sql.Selector)
+
 // Category is the predicate function for category builders.
 type Category func(*sql.Selector)
 

@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/peanut-cc/goBlog/internal/app/ent/blog"
 	"github.com/peanut-cc/goBlog/internal/app/ent/category"
 	"github.com/peanut-cc/goBlog/internal/app/ent/post"
 	"github.com/peanut-cc/goBlog/internal/app/ent/tag"
@@ -25,11 +26,616 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
+	TypeBlog     = "Blog"
 	TypeCategory = "Category"
 	TypePost     = "Post"
 	TypeTag      = "Tag"
 	TypeUser     = "User"
 )
+
+// BlogMutation represents an operation that mutate the Blogs
+// nodes in the graph.
+type BlogMutation struct {
+	config
+	op                  Op
+	typ                 string
+	id                  *int
+	default_page_num    *int
+	adddefault_page_num *int
+	blog_name           *string
+	btitle              *string
+	subtitle            *string
+	beian               *string
+	copy_right          *string
+	clearedFields       map[string]struct{}
+	done                bool
+	oldValue            func(context.Context) (*Blog, error)
+}
+
+var _ ent.Mutation = (*BlogMutation)(nil)
+
+// blogOption allows to manage the mutation configuration using functional options.
+type blogOption func(*BlogMutation)
+
+// newBlogMutation creates new mutation for $n.Name.
+func newBlogMutation(c config, op Op, opts ...blogOption) *BlogMutation {
+	m := &BlogMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeBlog,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withBlogID sets the id field of the mutation.
+func withBlogID(id int) blogOption {
+	return func(m *BlogMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Blog
+		)
+		m.oldValue = func(ctx context.Context) (*Blog, error) {
+			once.Do(func() {
+				if m.done {
+					err = fmt.Errorf("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Blog.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withBlog sets the old Blog of the mutation.
+func withBlog(node *Blog) blogOption {
+	return func(m *BlogMutation) {
+		m.oldValue = func(context.Context) (*Blog, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m BlogMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m BlogMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, fmt.Errorf("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the id value in the mutation. Note that, the id
+// is available only if it was provided to the builder.
+func (m *BlogMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// SetDefaultPageNum sets the default_page_num field.
+func (m *BlogMutation) SetDefaultPageNum(i int) {
+	m.default_page_num = &i
+	m.adddefault_page_num = nil
+}
+
+// DefaultPageNum returns the default_page_num value in the mutation.
+func (m *BlogMutation) DefaultPageNum() (r int, exists bool) {
+	v := m.default_page_num
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDefaultPageNum returns the old default_page_num value of the Blog.
+// If the Blog object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *BlogMutation) OldDefaultPageNum(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldDefaultPageNum is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldDefaultPageNum requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDefaultPageNum: %w", err)
+	}
+	return oldValue.DefaultPageNum, nil
+}
+
+// AddDefaultPageNum adds i to default_page_num.
+func (m *BlogMutation) AddDefaultPageNum(i int) {
+	if m.adddefault_page_num != nil {
+		*m.adddefault_page_num += i
+	} else {
+		m.adddefault_page_num = &i
+	}
+}
+
+// AddedDefaultPageNum returns the value that was added to the default_page_num field in this mutation.
+func (m *BlogMutation) AddedDefaultPageNum() (r int, exists bool) {
+	v := m.adddefault_page_num
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetDefaultPageNum reset all changes of the "default_page_num" field.
+func (m *BlogMutation) ResetDefaultPageNum() {
+	m.default_page_num = nil
+	m.adddefault_page_num = nil
+}
+
+// SetBlogName sets the blog_name field.
+func (m *BlogMutation) SetBlogName(s string) {
+	m.blog_name = &s
+}
+
+// BlogName returns the blog_name value in the mutation.
+func (m *BlogMutation) BlogName() (r string, exists bool) {
+	v := m.blog_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBlogName returns the old blog_name value of the Blog.
+// If the Blog object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *BlogMutation) OldBlogName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldBlogName is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldBlogName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBlogName: %w", err)
+	}
+	return oldValue.BlogName, nil
+}
+
+// ResetBlogName reset all changes of the "blog_name" field.
+func (m *BlogMutation) ResetBlogName() {
+	m.blog_name = nil
+}
+
+// SetBtitle sets the btitle field.
+func (m *BlogMutation) SetBtitle(s string) {
+	m.btitle = &s
+}
+
+// Btitle returns the btitle value in the mutation.
+func (m *BlogMutation) Btitle() (r string, exists bool) {
+	v := m.btitle
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBtitle returns the old btitle value of the Blog.
+// If the Blog object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *BlogMutation) OldBtitle(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldBtitle is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldBtitle requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBtitle: %w", err)
+	}
+	return oldValue.Btitle, nil
+}
+
+// ResetBtitle reset all changes of the "btitle" field.
+func (m *BlogMutation) ResetBtitle() {
+	m.btitle = nil
+}
+
+// SetSubtitle sets the subtitle field.
+func (m *BlogMutation) SetSubtitle(s string) {
+	m.subtitle = &s
+}
+
+// Subtitle returns the subtitle value in the mutation.
+func (m *BlogMutation) Subtitle() (r string, exists bool) {
+	v := m.subtitle
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSubtitle returns the old subtitle value of the Blog.
+// If the Blog object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *BlogMutation) OldSubtitle(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldSubtitle is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldSubtitle requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSubtitle: %w", err)
+	}
+	return oldValue.Subtitle, nil
+}
+
+// ResetSubtitle reset all changes of the "subtitle" field.
+func (m *BlogMutation) ResetSubtitle() {
+	m.subtitle = nil
+}
+
+// SetBeian sets the beian field.
+func (m *BlogMutation) SetBeian(s string) {
+	m.beian = &s
+}
+
+// Beian returns the beian value in the mutation.
+func (m *BlogMutation) Beian() (r string, exists bool) {
+	v := m.beian
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBeian returns the old beian value of the Blog.
+// If the Blog object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *BlogMutation) OldBeian(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldBeian is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldBeian requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBeian: %w", err)
+	}
+	return oldValue.Beian, nil
+}
+
+// ResetBeian reset all changes of the "beian" field.
+func (m *BlogMutation) ResetBeian() {
+	m.beian = nil
+}
+
+// SetCopyRight sets the copy_right field.
+func (m *BlogMutation) SetCopyRight(s string) {
+	m.copy_right = &s
+}
+
+// CopyRight returns the copy_right value in the mutation.
+func (m *BlogMutation) CopyRight() (r string, exists bool) {
+	v := m.copy_right
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCopyRight returns the old copy_right value of the Blog.
+// If the Blog object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *BlogMutation) OldCopyRight(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldCopyRight is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldCopyRight requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCopyRight: %w", err)
+	}
+	return oldValue.CopyRight, nil
+}
+
+// ResetCopyRight reset all changes of the "copy_right" field.
+func (m *BlogMutation) ResetCopyRight() {
+	m.copy_right = nil
+}
+
+// Op returns the operation name.
+func (m *BlogMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (Blog).
+func (m *BlogMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during
+// this mutation. Note that, in order to get all numeric
+// fields that were in/decremented, call AddedFields().
+func (m *BlogMutation) Fields() []string {
+	fields := make([]string, 0, 6)
+	if m.default_page_num != nil {
+		fields = append(fields, blog.FieldDefaultPageNum)
+	}
+	if m.blog_name != nil {
+		fields = append(fields, blog.FieldBlogName)
+	}
+	if m.btitle != nil {
+		fields = append(fields, blog.FieldBtitle)
+	}
+	if m.subtitle != nil {
+		fields = append(fields, blog.FieldSubtitle)
+	}
+	if m.beian != nil {
+		fields = append(fields, blog.FieldBeian)
+	}
+	if m.copy_right != nil {
+		fields = append(fields, blog.FieldCopyRight)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name.
+// The second boolean value indicates that this field was
+// not set, or was not define in the schema.
+func (m *BlogMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case blog.FieldDefaultPageNum:
+		return m.DefaultPageNum()
+	case blog.FieldBlogName:
+		return m.BlogName()
+	case blog.FieldBtitle:
+		return m.Btitle()
+	case blog.FieldSubtitle:
+		return m.Subtitle()
+	case blog.FieldBeian:
+		return m.Beian()
+	case blog.FieldCopyRight:
+		return m.CopyRight()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database.
+// An error is returned if the mutation operation is not UpdateOne,
+// or the query to the database was failed.
+func (m *BlogMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case blog.FieldDefaultPageNum:
+		return m.OldDefaultPageNum(ctx)
+	case blog.FieldBlogName:
+		return m.OldBlogName(ctx)
+	case blog.FieldBtitle:
+		return m.OldBtitle(ctx)
+	case blog.FieldSubtitle:
+		return m.OldSubtitle(ctx)
+	case blog.FieldBeian:
+		return m.OldBeian(ctx)
+	case blog.FieldCopyRight:
+		return m.OldCopyRight(ctx)
+	}
+	return nil, fmt.Errorf("unknown Blog field %s", name)
+}
+
+// SetField sets the value for the given name. It returns an
+// error if the field is not defined in the schema, or if the
+// type mismatch the field type.
+func (m *BlogMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case blog.FieldDefaultPageNum:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDefaultPageNum(v)
+		return nil
+	case blog.FieldBlogName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBlogName(v)
+		return nil
+	case blog.FieldBtitle:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBtitle(v)
+		return nil
+	case blog.FieldSubtitle:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSubtitle(v)
+		return nil
+	case blog.FieldBeian:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBeian(v)
+		return nil
+	case blog.FieldCopyRight:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCopyRight(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Blog field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented
+// or decremented during this mutation.
+func (m *BlogMutation) AddedFields() []string {
+	var fields []string
+	if m.adddefault_page_num != nil {
+		fields = append(fields, blog.FieldDefaultPageNum)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was in/decremented
+// from a field with the given name. The second value indicates
+// that this field was not set, or was not define in the schema.
+func (m *BlogMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case blog.FieldDefaultPageNum:
+		return m.AddedDefaultPageNum()
+	}
+	return nil, false
+}
+
+// AddField adds the value for the given name. It returns an
+// error if the field is not defined in the schema, or if the
+// type mismatch the field type.
+func (m *BlogMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case blog.FieldDefaultPageNum:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDefaultPageNum(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Blog numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared
+// during this mutation.
+func (m *BlogMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicates if this field was
+// cleared in this mutation.
+func (m *BlogMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value for the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *BlogMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Blog nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation regarding the
+// given field name. It returns an error if the field is not
+// defined in the schema.
+func (m *BlogMutation) ResetField(name string) error {
+	switch name {
+	case blog.FieldDefaultPageNum:
+		m.ResetDefaultPageNum()
+		return nil
+	case blog.FieldBlogName:
+		m.ResetBlogName()
+		return nil
+	case blog.FieldBtitle:
+		m.ResetBtitle()
+		return nil
+	case blog.FieldSubtitle:
+		m.ResetSubtitle()
+		return nil
+	case blog.FieldBeian:
+		m.ResetBeian()
+		return nil
+	case blog.FieldCopyRight:
+		m.ResetCopyRight()
+		return nil
+	}
+	return fmt.Errorf("unknown Blog field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this
+// mutation.
+func (m *BlogMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all ids (to other nodes) that were added for
+// the given edge name.
+func (m *BlogMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this
+// mutation.
+func (m *BlogMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all ids (to other nodes) that were removed for
+// the given edge name.
+func (m *BlogMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this
+// mutation.
+func (m *BlogMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean indicates if this edge was
+// cleared in this mutation.
+func (m *BlogMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value for the given name. It returns an
+// error if the edge name is not defined in the schema.
+func (m *BlogMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown Blog unique edge %s", name)
+}
+
+// ResetEdge resets all changes in the mutation regarding the
+// given edge name. It returns an error if the edge is not
+// defined in the schema.
+func (m *BlogMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown Blog edge %s", name)
+}
 
 // CategoryMutation represents an operation that mutate the Categories
 // nodes in the graph.

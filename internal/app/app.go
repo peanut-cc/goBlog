@@ -134,7 +134,7 @@ func InitEntOrm() (func(), error) {
 func loadAdminUser(ctx context.Context) {
 	admin, err := global.EntClient.User.Query().Where(user.UsernameEQ(config.C.Blog.UserName)).Only(ctx)
 	if err != nil {
-		logger.Printf(ctx, "Initializing admin user:%v", config.C.Blog.UserName)
+		logger.Errorf(ctx, "Initializing admin user:%v", config.C.Blog.UserName)
 		global.EntClient.User.Create().
 			SetUsername(config.C.Blog.UserName).
 			SetPassword(utils.EncryptPasswd(config.C.Blog.UserName, config.C.Blog.Password)).
@@ -142,6 +142,21 @@ func loadAdminUser(ctx context.Context) {
 			SetPhone(config.C.Blog.Phone).SaveX(ctx)
 	} else {
 		logger.Printf(ctx, "admin user is %v", admin.Username)
+	}
+
+	// load blog info
+	// TODO 关于这里的异常判断可以处理的更加合理
+	_, err = global.EntClient.Blog.Query().First(ctx)
+	if err != nil {
+		logger.Errorf(ctx, "Query blog info err:%v ", err.Error())
+		global.EntClient.Blog.Create().
+			SetDefaultPageNum(config.C.Blog.DefaultPageNum).
+			SetBlogName(config.C.Blog.BlogName).
+			SetBtitle(config.C.Blog.BTitle).
+			SetCopyRight(config.C.Blog.Copyright).
+			SetSubtitle(config.C.Blog.SubTitle).
+			SetBeian(config.C.Blog.BeiAn).
+			Save(ctx)
 	}
 }
 

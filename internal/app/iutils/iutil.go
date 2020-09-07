@@ -4,7 +4,6 @@ import (
 	"github.com/gin-gonic/contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/peanut-cc/goBlog/internal/app/config"
-	"github.com/peanut-cc/goBlog/pkg/logger"
 	"github.com/peanut-cc/goBlog/pkg/utils"
 )
 
@@ -17,7 +16,6 @@ func VerifyPasswd(origin, name, input string) bool {
 func IsLogin(c *gin.Context) bool {
 	session := sessions.Default(c)
 	v := session.Get("username")
-	logger.Warnf(c, "%v", v)
 	if v == nil || v.(string) != config.C.Blog.UserName {
 		return false
 	}

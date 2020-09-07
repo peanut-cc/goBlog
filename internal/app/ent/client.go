@@ -9,6 +9,7 @@ import (
 
 	"github.com/peanut-cc/goBlog/internal/app/ent/migrate"
 
+	"github.com/peanut-cc/goBlog/internal/app/ent/blog"
 	"github.com/peanut-cc/goBlog/internal/app/ent/category"
 	"github.com/peanut-cc/goBlog/internal/app/ent/post"
 	"github.com/peanut-cc/goBlog/internal/app/ent/tag"
@@ -24,6 +25,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// Blog is the client for interacting with the Blog builders.
+	Blog *BlogClient
 	// Category is the client for interacting with the Category builders.
 	Category *CategoryClient
 	// Post is the client for interacting with the Post builders.
@@ -45,6 +48,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.Blog = NewBlogClient(c.config)
 	c.Category = NewCategoryClient(c.config)
 	c.Post = NewPostClient(c.config)
 	c.Tag = NewTagClient(c.config)
@@ -81,6 +85,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	return &Tx{
 		ctx:      ctx,
 		config:   cfg,
+		Blog:     NewBlogClient(cfg),
 		Category: NewCategoryClient(cfg),
 		Post:     NewPostClient(cfg),
 		Tag:      NewTagClient(cfg),
@@ -100,6 +105,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := config{driver: &txDriver{tx: tx, drv: c.driver}, log: c.log, debug: c.debug, hooks: c.hooks}
 	return &Tx{
 		config:   cfg,
+		Blog:     NewBlogClient(cfg),
 		Category: NewCategoryClient(cfg),
 		Post:     NewPostClient(cfg),
 		Tag:      NewTagClient(cfg),
@@ -110,7 +116,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		Category.
+//		Blog.
 //		Query().
 //		Count(ctx)
 //
@@ -132,10 +138,99 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
+	c.Blog.Use(hooks...)
 	c.Category.Use(hooks...)
 	c.Post.Use(hooks...)
 	c.Tag.Use(hooks...)
 	c.User.Use(hooks...)
+}
+
+// BlogClient is a client for the Blog schema.
+type BlogClient struct {
+	config
+}
+
+// NewBlogClient returns a client for the Blog from the given config.
+func NewBlogClient(c config) *BlogClient {
+	return &BlogClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `blog.Hooks(f(g(h())))`.
+func (c *BlogClient) Use(hooks ...Hook) {
+	c.hooks.Blog = append(c.hooks.Blog, hooks...)
+}
+
+// Create returns a create builder for Blog.
+func (c *BlogClient) Create() *BlogCreate {
+	mutation := newBlogMutation(c.config, OpCreate)
+	return &BlogCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// BulkCreate returns a builder for creating a bulk of Blog entities.
+func (c *BlogClient) CreateBulk(builders ...*BlogCreate) *BlogCreateBulk {
+	return &BlogCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Blog.
+func (c *BlogClient) Update() *BlogUpdate {
+	mutation := newBlogMutation(c.config, OpUpdate)
+	return &BlogUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *BlogClient) UpdateOne(b *Blog) *BlogUpdateOne {
+	mutation := newBlogMutation(c.config, OpUpdateOne, withBlog(b))
+	return &BlogUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *BlogClient) UpdateOneID(id int) *BlogUpdateOne {
+	mutation := newBlogMutation(c.config, OpUpdateOne, withBlogID(id))
+	return &BlogUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Blog.
+func (c *BlogClient) Delete() *BlogDelete {
+	mutation := newBlogMutation(c.config, OpDelete)
+	return &BlogDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *BlogClient) DeleteOne(b *Blog) *BlogDeleteOne {
+	return c.DeleteOneID(b.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *BlogClient) DeleteOneID(id int) *BlogDeleteOne {
+	builder := c.Delete().Where(blog.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &BlogDeleteOne{builder}
+}
+
+// Query returns a query builder for Blog.
+func (c *BlogClient) Query() *BlogQuery {
+	return &BlogQuery{config: c.config}
+}
+
+// Get returns a Blog entity by its id.
+func (c *BlogClient) Get(ctx context.Context, id int) (*Blog, error) {
+	return c.Query().Where(blog.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *BlogClient) GetX(ctx context.Context, id int) *Blog {
+	b, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return b
+}
+
+// Hooks returns the client hooks.
+func (c *BlogClient) Hooks() []Hook {
+	return c.hooks.Blog
 }
 
 // CategoryClient is a client for the Category schema.

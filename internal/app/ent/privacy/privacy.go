@@ -210,6 +210,30 @@ func DenyMutationOperationRule(op ent.Op) MutationRule {
 	return OnMutationOperation(rule, op)
 }
 
+// The BlogQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type BlogQueryRuleFunc func(context.Context, *ent.BlogQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f BlogQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.BlogQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.BlogQuery", q)
+}
+
+// The BlogMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type BlogMutationRuleFunc func(context.Context, *ent.BlogMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f BlogMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.BlogMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.BlogMutation", m)
+}
+
 // The CategoryQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type CategoryQueryRuleFunc func(context.Context, *ent.CategoryQuery) error

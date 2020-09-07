@@ -3,15 +3,14 @@
     <div class="typecho-page-title">
         <h2>个人设置</h2>
     </div>
-{{/*    {{with .Account}}*/}}
     <div class="row typecho-page-main">
         <div class="col-mb-12 col-tb-3">
             <p>
-	    <img class="profile-avatar" src="//st.deepzz.com/static/img/avatar.png" alt="{{.BlogName}}" />
+                <img class="profile-avatar" src="//st.deepzz.com/static/img/avatar.png" alt="{{.BlogInfo.BlogName}}" />
             </p>
-            <h2>{{.BlogName}}</h2>
-            <p>{{.SubTitle}}</p>
-            <p>最后登录: {{dateformat .LoginTime "2006/01/02 15:04"}}</p>
+            <h2>{{.BlogInfo.BlogName}}</h2>
+            <p>{{.BlogInfo.Subtitle}}</p>
+            <p>最后登录: {{dateformat .Account.LoginTime "2006/01/02 15:04"}}</p>
         </div>
         <div class="col-mb-12 col-tb-6 col-tb-offset-1 typecho-content-panel" role="form">
             <section>
@@ -21,7 +20,7 @@
                         <li>
                             <label class="typecho-label" for="info-0-1">
                                 个人邮箱</label>
-                            <input id="info-0-1" name="email" type="text" class="text" value="{{.Email}}" />
+                            <input id="info-0-1" name="email" type="text" class="text" value="{{.Account.Email}}" />
                             <p class="description">
                                 用于发送告警邮件及其它通知, 建议填写, 如: example@163.com.</p>
                         </li>
@@ -30,18 +29,10 @@
                         <li>
                             <label class="typecho-label" for="info-0-2">
                                 移动电话</label>
-                            <input id="info-0-2" name="phoneNumber" type="text" class="text" value="{{.Phone}}" />
+                            <input id="info-0-2" name="phoneNumber" type="text" class="text"
+                                value="{{.Account.Phone}}" />
                             <p class="description">
                                 选择填写, 如: ＋8615123456789.</p>
-                        </li>
-                    </ul>
-                    <ul class="typecho-option">
-                        <li>
-                            <label class="typecho-label" for="info-0-3">
-                                家庭住址</label>
-                            <input id="info-0-3" name="address" type="text" class="text" value="{{.Address}}" />
-                            <p class="description">
-                                选择填写, 如: xx省xx市xx区(县)xxxx小区xxx号.</p>
                         </li>
                     </ul>
                     <ul class="typecho-option typecho-option-submit">
@@ -60,7 +51,7 @@
                         <li>
                             <label class="typecho-label" for="blog-0-1">
                                 博客昵称 *</label>
-                            <input id="blog-0-1" name="blogName" type="text" class="text" value="{{.BlogName}}" />
+                            <input id="blog-0-1" name="blogName" type="text" class="text" value="{{.BlogInfo.BlogName}}" />
                             <p class="description">
                                 用户昵称可以与用户名不同, 用于前台显示.
                                 <br />如果你将此项留空, 将默认使用登录用户名.</p>
@@ -70,7 +61,7 @@
                         <li>
                             <label class="typecho-label" for="blog-0-2">
                                 标题显示 *</label>
-                            <input id="blog-0-2" name="bTitle" type="text" class="text" value="{{.BTitle}}" />
+                            <input id="blog-0-2" name="bTitle" type="text" class="text" value="{{.BlogInfo.Btitle}}" />
                             <p class="description">
                                 用于所有页面的title组成, 如: Deepzz's Blog</p>
                         </li>
@@ -79,36 +70,18 @@
                         <li>
                             <label class="typecho-label" for="blog-0-3">
                                 个人格言</label>
-                            <input id="blog-0-3" name="subTitle" type="text" class="text" value="{{.SubTitle}}" />
+                            <input id="blog-0-3" name="subTitle" type="text" class="text" value="{{.BlogInfo.Subtitle}}" />
                             <p class="description">
                                 简介或格言, 如: 生活百般滋味, 人生需要笑对.</p>
                         </li>
                     </ul>
-                     <ul class="typecho-option">
+                    <ul class="typecho-option">
                         <li>
                             <label class="typecho-label" for="blog-0-4">
                                 备案号</label>
-                            <input id="blog-0-4" name="beiAn" type="text" class="text" value="{{.BeiAn}}" />
+                            <input id="blog-0-4" name="beiAn" type="text" class="text" value="{{.BlogInfo.Beian}}" />
                             <p class="description">
                                 用于底部显示, 不添加则不显示, 如: 蜀 ICP 备 16021362 号</p>
-                        </li>
-                    </ul>
-                    <ul class="typecho-option">
-                        <li>
-                            <label class="typecho-label" for="blog-0-5">
-                                专题前说</label>
-                            <textarea id="blog-0-5" name="seriessay">{{.SeriesSay}}</textarea>
-                            <p class="description">
-                                此文字用于专题前述, 会在专题最前方显示.</p>
-                        </li>
-                    </ul>
-                    <ul class="typecho-option">
-                        <li>
-                            <label class="typecho-label" for="blog-0-6">
-                                归档前说</label>
-                            <textarea id="blog-0-6" name="archivessay">{{.ArchivesSay}}</textarea>
-                            <p class="description">
-                                此文字用于归档前述, 会在归档最前方显示.</p>
                         </li>
                     </ul>
                     <ul class="typecho-option typecho-option-submit" id="typecho-option-item-submit-4">
@@ -161,6 +134,5 @@
             </section>
         </div>
     </div>
-{{/*    {{end}}*/}}
 </div>
 {{end}}

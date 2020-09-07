@@ -74,14 +74,15 @@ func HandleProfile(c *gin.Context) {
 		c.Redirect(http.StatusFound, "/admin/login")
 		return
 	}
+	blogInfo := global.EntClient.Blog.Query().FirstX(c)
+
 	c.Status(http.StatusOK)
 	RenderHTMLBack(c, "admin-profile", gin.H{
 		"Console":  true,
 		"Path":     c.Request.URL.Path,
 		"Title":    "个人配置 | " + config.C.Blog.BTitle,
-		"BlogName": config.C.Blog.BlogName,
-
-		"Account": admin,
+		"Account":  admin,
+		"BlogInfo": blogInfo,
 	})
 }
 
