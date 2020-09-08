@@ -20,6 +20,8 @@ func (Post) Fields() []ent.Field {
 		field.Time("modified_time"),
 		field.String("excerpt").Optional(),
 		field.String("author"),
+		// 是否是草稿
+		field.Bool("is_Draft"),
 	}
 }
 

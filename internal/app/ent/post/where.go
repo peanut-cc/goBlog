@@ -135,6 +135,13 @@ func Author(v string) predicate.Post {
 	})
 }
 
+// IsDraft applies equality check predicate on the "is_Draft" field. It's identical to IsDraftEQ.
+func IsDraft(v bool) predicate.Post {
+	return predicate.Post(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldIsDraft), v))
+	})
+}
+
 // TitleEQ applies the EQ predicate on the "title" field.
 func TitleEQ(v string) predicate.Post {
 	return predicate.Post(func(s *sql.Selector) {
@@ -742,6 +749,20 @@ func AuthorEqualFold(v string) predicate.Post {
 func AuthorContainsFold(v string) predicate.Post {
 	return predicate.Post(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldAuthor), v))
+	})
+}
+
+// IsDraftEQ applies the EQ predicate on the "is_Draft" field.
+func IsDraftEQ(v bool) predicate.Post {
+	return predicate.Post(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldIsDraft), v))
+	})
+}
+
+// IsDraftNEQ applies the NEQ predicate on the "is_Draft" field.
+func IsDraftNEQ(v bool) predicate.Post {
+	return predicate.Post(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldIsDraft), v))
 	})
 }
 

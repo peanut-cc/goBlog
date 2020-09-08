@@ -69,6 +69,7 @@ type Server struct {
 	RunMode         string
 	HTTPPort        int
 	ShutdownTimeout int
+	Domain 			string
 }
 
 type Blog struct {

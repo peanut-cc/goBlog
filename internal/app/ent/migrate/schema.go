@@ -46,6 +46,7 @@ var (
 		{Name: "modified_time", Type: field.TypeTime},
 		{Name: "excerpt", Type: field.TypeString, Nullable: true},
 		{Name: "author", Type: field.TypeString},
+		{Name: "is_draft", Type: field.TypeBool},
 		{Name: "category_posts", Type: field.TypeInt, Nullable: true},
 	}
 	// PostsTable holds the schema information for the "posts" table.
@@ -56,7 +57,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:  "posts_categories_posts",
-				Columns: []*schema.Column{PostsColumns[7]},
+				Columns: []*schema.Column{PostsColumns[8]},
 
 				RefColumns: []*schema.Column{CategoriesColumns[0]},
 				OnDelete:   schema.SetNull,

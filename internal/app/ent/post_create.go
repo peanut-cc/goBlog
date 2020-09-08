@@ -66,6 +66,12 @@ func (pc *PostCreate) SetAuthor(s string) *PostCreate {
 	return pc
 }
 
+// SetIsDraft sets the is_Draft field.
+func (pc *PostCreate) SetIsDraft(b bool) *PostCreate {
+	pc.mutation.SetIsDraft(b)
+	return pc
+}
+
 // SetCategoryID sets the category edge to Category by id.
 func (pc *PostCreate) SetCategoryID(id int) *PostCreate {
 	pc.mutation.SetCategoryID(id)
@@ -162,6 +168,9 @@ func (pc *PostCreate) preSave() error {
 	if _, ok := pc.mutation.Author(); !ok {
 		return &ValidationError{Name: "author", err: errors.New("ent: missing required field \"author\"")}
 	}
+	if _, ok := pc.mutation.IsDraft(); !ok {
+		return &ValidationError{Name: "is_Draft", err: errors.New("ent: missing required field \"is_Draft\"")}
+	}
 	return nil
 }
 
@@ -236,6 +245,14 @@ func (pc *PostCreate) createSpec() (*Post, *sqlgraph.CreateSpec) {
 			Column: post.FieldAuthor,
 		})
 		po.Author = value
+	}
+	if value, ok := pc.mutation.IsDraft(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Value:  value,
+			Column: post.FieldIsDraft,
+		})
+		po.IsDraft = value
 	}
 	if nodes := pc.mutation.CategoryIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

@@ -29,6 +29,8 @@ type Post struct {
 	Excerpt string `json:"excerpt,omitempty"`
 	// Author holds the value of the "author" field.
 	Author string `json:"author,omitempty"`
+	// IsDraft holds the value of the "is_Draft" field.
+	IsDraft bool `json:"is_Draft,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the PostQuery when eager-loading is set.
 	Edges          PostEdges `json:"edges"`
@@ -79,6 +81,7 @@ func (*Post) scanValues() []interface{} {
 		&sql.NullTime{},   // modified_time
 		&sql.NullString{}, // excerpt
 		&sql.NullString{}, // author
+		&sql.NullBool{},   // is_Draft
 	}
 }
 
@@ -131,7 +134,12 @@ func (po *Post) assignValues(values ...interface{}) error {
 	} else if value.Valid {
 		po.Author = value.String
 	}
-	values = values[6:]
+	if value, ok := values[6].(*sql.NullBool); !ok {
+		return fmt.Errorf("unexpected type %T for field is_Draft", values[6])
+	} else if value.Valid {
+		po.IsDraft = value.Bool
+	}
+	values = values[7:]
 	if len(values) == len(post.ForeignKeys) {
 		if value, ok := values[0].(*sql.NullInt64); !ok {
 			return fmt.Errorf("unexpected type %T for edge-field category_posts", value)
@@ -188,6 +196,8 @@ func (po *Post) String() string {
 	builder.WriteString(po.Excerpt)
 	builder.WriteString(", author=")
 	builder.WriteString(po.Author)
+	builder.WriteString(", is_Draft=")
+	builder.WriteString(fmt.Sprintf("%v", po.IsDraft))
 	builder.WriteByte(')')
 	return builder.String()
 }

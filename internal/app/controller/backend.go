@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"html/template"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/peanut-cc/goBlog/internal/app/config"
@@ -13,6 +14,7 @@ import (
 	"github.com/peanut-cc/goBlog/internal/app/iutils"
 	"github.com/peanut-cc/goBlog/pkg/logger"
 
+	ipost "github.com/peanut-cc/goBlog/internal/app/ent/post"
 	iuser "github.com/peanut-cc/goBlog/internal/app/ent/user"
 
 	"github.com/gin-gonic/contrib/sessions"
@@ -86,11 +88,24 @@ func HandleProfile(c *gin.Context) {
 }
 
 func HandlePost(c *gin.Context) {
+	h := gin.H{}
 	blogInfo, err := global.EntClient.Blog.Query().First(c)
 	if err != nil {
 		logger.Errorf(c, "ent orm query blog info error:%v", err.Error())
 		c.Redirect(http.StatusFound, "/admin/profile")
 		return
+	}
+	id, err := strconv.Atoi(c.Query("cid"))
+	if err == nil && id > 0 {
+		post, err := global.EntClient.Post.Query().Where(ipost.IDEQ(id)).Only(c)
+		if err != nil {
+			logger.StartSpan(c, logger.SetSpanFuncName("HandlePost")).Warnf("not found post err:%v", err.Error())
+			h["Title"] = "编辑文章 | " + blogInfo.Btitle
+			h["Edit"] = post
+		}
+	}
+	if h["Title"] == nil {
+		h["Title"] = "撰写文章 | " + blogInfo.Btitle
 	}
 	tags, err := global.EntClient.Tag.Query().All(c)
 	if err != nil {
@@ -98,13 +113,18 @@ func HandlePost(c *gin.Context) {
 		c.Redirect(http.StatusFound, "/admin/profile")
 		return
 	}
+	h["Tags"] = tags
+	categories, err := global.EntClient.Category.Query().All(c)
+	if err != nil {
+		logger.Errorf(c, "ent orm query categories error:%v", err.Error())
+		c.Redirect(http.StatusFound, "/admin/profile")
+		return
+	}
+	h["Categories"] = categories
+	h["Path"] = c.Request.URL.Path
+	h["Domain"] = config.C.Server.Domain
 	c.Status(http.StatusOK)
-	RenderHTMLBack(c, "admin-post", gin.H{
-		"Title":  "撰写文章 | " + blogInfo.Btitle,
-		"Path":   c.Request.URL.Path,
-		"Tags":   tags,
-		"Domain": "127.0.0.1",
-	})
+	RenderHTMLBack(c, "admin-post",h)
 }
 
 // 渲染 html

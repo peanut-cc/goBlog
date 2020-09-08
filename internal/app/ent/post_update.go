@@ -80,6 +80,12 @@ func (pu *PostUpdate) SetAuthor(s string) *PostUpdate {
 	return pu
 }
 
+// SetIsDraft sets the is_Draft field.
+func (pu *PostUpdate) SetIsDraft(b bool) *PostUpdate {
+	pu.mutation.SetIsDraft(b)
+	return pu
+}
+
 // SetCategoryID sets the category edge to Category by id.
 func (pu *PostUpdate) SetCategoryID(id int) *PostUpdate {
 	pu.mutation.SetCategoryID(id)
@@ -258,6 +264,13 @@ func (pu *PostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: post.FieldAuthor,
 		})
 	}
+	if value, ok := pu.mutation.IsDraft(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Value:  value,
+			Column: post.FieldIsDraft,
+		})
+	}
 	if pu.mutation.CategoryCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -396,6 +409,12 @@ func (puo *PostUpdateOne) ClearExcerpt() *PostUpdateOne {
 // SetAuthor sets the author field.
 func (puo *PostUpdateOne) SetAuthor(s string) *PostUpdateOne {
 	puo.mutation.SetAuthor(s)
+	return puo
+}
+
+// SetIsDraft sets the is_Draft field.
+func (puo *PostUpdateOne) SetIsDraft(b bool) *PostUpdateOne {
+	puo.mutation.SetIsDraft(b)
 	return puo
 }
 
@@ -573,6 +592,13 @@ func (puo *PostUpdateOne) sqlSave(ctx context.Context) (po *Post, err error) {
 			Type:   field.TypeString,
 			Value:  value,
 			Column: post.FieldAuthor,
+		})
+	}
+	if value, ok := puo.mutation.IsDraft(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Value:  value,
+			Column: post.FieldIsDraft,
 		})
 	}
 	if puo.mutation.CategoryCleared() {

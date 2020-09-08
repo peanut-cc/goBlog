@@ -19,6 +19,8 @@ const (
 	FieldExcerpt = "excerpt"
 	// FieldAuthor holds the string denoting the author field in the database.
 	FieldAuthor = "author"
+	// FieldIsDraft holds the string denoting the is_draft field in the database.
+	FieldIsDraft = "is_draft"
 
 	// EdgeCategory holds the string denoting the category edge name in mutations.
 	EdgeCategory = "category"
@@ -50,6 +52,7 @@ var Columns = []string{
 	FieldModifiedTime,
 	FieldExcerpt,
 	FieldAuthor,
+	FieldIsDraft,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the Post type.

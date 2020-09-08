@@ -116,3 +116,32 @@ func responseNotice(c *gin.Context, typ, content, hl string) {
 	c.SetCookie("notice", fmt.Sprintf("[\"%s\"]", content), 86400, "/", "", true, false)
 	c.Redirect(http.StatusFound, c.Request.Referer())
 }
+
+func apiPostAdd(c *gin.Context) {
+	var (
+		err error
+		do string
+		cid int
+	)
+	do = c.PostForm("do")
+	slug := c.PostForm("slug")
+	title := c.PostForm("title")
+	text := c.PostForm("text")
+	category := c.PostForm("serie")
+	tag := c.PostForm("tags")
+	update := c.PostForm("update")
+	if slug == "" || title == "" || text == "" {
+		err = errors.New("参数错误")
+		return
+	}
+	var tags []string
+	if tag != "" {
+		tags = strings.Split(",")
+	}
+	cid, err = strconv.Atoi(c.PostForm("cid"))
+	//  表示新文章
+	if err != nil || cid < 1 {
+		global.EntClient.Post.Create().
+	}
+
+}

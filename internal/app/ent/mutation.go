@@ -1018,6 +1018,7 @@ type PostMutation struct {
 	modified_time   *time.Time
 	excerpt         *string
 	author          *string
+	is_Draft        *bool
 	clearedFields   map[string]struct{}
 	category        *int
 	clearedcategory bool
@@ -1341,6 +1342,43 @@ func (m *PostMutation) ResetAuthor() {
 	m.author = nil
 }
 
+// SetIsDraft sets the is_Draft field.
+func (m *PostMutation) SetIsDraft(b bool) {
+	m.is_Draft = &b
+}
+
+// IsDraft returns the is_Draft value in the mutation.
+func (m *PostMutation) IsDraft() (r bool, exists bool) {
+	v := m.is_Draft
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIsDraft returns the old is_Draft value of the Post.
+// If the Post object wasn't provided to the builder, the object is fetched
+// from the database.
+// An error is returned if the mutation operation is not UpdateOne, or database query fails.
+func (m *PostMutation) OldIsDraft(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldIsDraft is allowed only on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldIsDraft requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIsDraft: %w", err)
+	}
+	return oldValue.IsDraft, nil
+}
+
+// ResetIsDraft reset all changes of the "is_Draft" field.
+func (m *PostMutation) ResetIsDraft() {
+	m.is_Draft = nil
+}
+
 // SetCategoryID sets the category edge to Category by id.
 func (m *PostMutation) SetCategoryID(id int) {
 	m.category = &id
@@ -1436,7 +1474,7 @@ func (m *PostMutation) Type() string {
 // this mutation. Note that, in order to get all numeric
 // fields that were in/decremented, call AddedFields().
 func (m *PostMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 7)
 	if m.title != nil {
 		fields = append(fields, post.FieldTitle)
 	}
@@ -1454,6 +1492,9 @@ func (m *PostMutation) Fields() []string {
 	}
 	if m.author != nil {
 		fields = append(fields, post.FieldAuthor)
+	}
+	if m.is_Draft != nil {
+		fields = append(fields, post.FieldIsDraft)
 	}
 	return fields
 }
@@ -1475,6 +1516,8 @@ func (m *PostMutation) Field(name string) (ent.Value, bool) {
 		return m.Excerpt()
 	case post.FieldAuthor:
 		return m.Author()
+	case post.FieldIsDraft:
+		return m.IsDraft()
 	}
 	return nil, false
 }
@@ -1496,6 +1539,8 @@ func (m *PostMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldExcerpt(ctx)
 	case post.FieldAuthor:
 		return m.OldAuthor(ctx)
+	case post.FieldIsDraft:
+		return m.OldIsDraft(ctx)
 	}
 	return nil, fmt.Errorf("unknown Post field %s", name)
 }
@@ -1546,6 +1591,13 @@ func (m *PostMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetAuthor(v)
+		return nil
+	case post.FieldIsDraft:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIsDraft(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Post field %s", name)
@@ -1623,6 +1675,9 @@ func (m *PostMutation) ResetField(name string) error {
 		return nil
 	case post.FieldAuthor:
 		m.ResetAuthor()
+		return nil
+	case post.FieldIsDraft:
+		m.ResetIsDraft()
 		return nil
 	}
 	return fmt.Errorf("unknown Post field %s", name)
