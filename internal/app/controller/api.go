@@ -1,11 +1,17 @@
 package controller
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/peanut-cc/goBlog/internal/app/config"
+	"github.com/peanut-cc/goBlog/internal/app/ent"
+	"github.com/peanut-cc/goBlog/internal/app/ent/post"
 	"github.com/peanut-cc/goBlog/internal/app/ent/user"
 	"github.com/peanut-cc/goBlog/internal/app/global"
 	"github.com/peanut-cc/goBlog/internal/app/iutils"
@@ -120,7 +126,7 @@ func responseNotice(c *gin.Context, typ, content, hl string) {
 func apiPostAdd(c *gin.Context) {
 	var (
 		err error
-		do string
+		do  string
 		cid int
 	)
 	do = c.PostForm("do")
@@ -130,18 +136,63 @@ func apiPostAdd(c *gin.Context) {
 	category := c.PostForm("serie")
 	tag := c.PostForm("tags")
 	update := c.PostForm("update")
+	date := utils.CheckDate(c.PostForm("date"))
 	if slug == "" || title == "" || text == "" {
 		err = errors.New("参数错误")
 		return
 	}
 	var tags []string
 	if tag != "" {
-		tags = strings.Split(",")
+		tags = strings.Split(tag, ",")
 	}
 	cid, err = strconv.Atoi(c.PostForm("cid"))
 	//  表示新文章
 	if err != nil || cid < 1 {
 		global.EntClient.Post.Create().
+			SetAuthor("peanut").
+			SetBody(text).
+			SetTitle(title).
+			SetCreatedTime(date).
+			Save(c)
 	}
 
+}
+
+func UpdateMultiTags(ctx context.Context, newTags []string, postID int) {
+	post, err := global.EntClient.Post.Query().Where(post.IDEQ(postID)).WithTags().First(ctx)
+	if err != nil {
+		logger.StartSpan(ctx, logger.SetSpanFuncName("UpdateMultiTags")).Fatalf("query post error:%v", err.Error())
+	}
+	var needToDelTagID []int
+	for _, originTag := range post.Edges.Tags {
+		if !IsInArray(originTag.Name, newTags) {
+			needToDelTagID = append(needToDelTagID, originTag.ID)
+		}
+	}
+	post.Update().RemoveTagIDs(needToDelTagID...).Save(ctx)
+	var oldTagNames []string
+	for _, oldTag := range post.Edges.Tags {
+		oldTagNames = append(oldTagNames, oldTag.Name)
+	}
+	var needToAddTag []*ent.TagCreate
+	for _, newTag := range newTags {
+		if !IsInArray(newTag, oldTagNames) {
+			needToAddTag = append(needToAddTag, global.EntClient.Tag.Create().SetName(newTag))
+		}
+	}
+	addTags, err := global.EntClient.Tag.CreateBulk(needToAddTag...).Save(ctx)
+	if err != nil {
+		logger.StartSpan(ctx, logger.SetSpanFuncName("UpdateMultiTags")).Fatalf("tag create build error:%v", err.Error())
+	}
+	post.Update().AddTags(addTags...).Save(ctx)
+}
+
+// 判断tag是否在array中
+func IsInArray(name string, tagNameArray []string) bool {
+	for _, v := range tagNameArray {
+		if name == v {
+			return true
+		}
+	}
+	return false
 }

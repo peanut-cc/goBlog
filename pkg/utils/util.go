@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"path"
 	"reflect"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -83,4 +84,11 @@ func MustUUID() string {
 		panic(err)
 	}
 	return v.String()
+}
+
+func CheckDate(date string) time.Time {
+	if t, err := time.ParseInLocation("2006-01-02 15:04", date, time.Local);err == nil {
+		return t
+	}
+	return time.Now()
 }
