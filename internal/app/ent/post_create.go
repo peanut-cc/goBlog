@@ -40,9 +40,25 @@ func (pc *PostCreate) SetCreatedTime(t time.Time) *PostCreate {
 	return pc
 }
 
+// SetNillableCreatedTime sets the created_time field if the given value is not nil.
+func (pc *PostCreate) SetNillableCreatedTime(t *time.Time) *PostCreate {
+	if t != nil {
+		pc.SetCreatedTime(*t)
+	}
+	return pc
+}
+
 // SetModifiedTime sets the modified_time field.
 func (pc *PostCreate) SetModifiedTime(t time.Time) *PostCreate {
 	pc.mutation.SetModifiedTime(t)
+	return pc
+}
+
+// SetNillableModifiedTime sets the modified_time field if the given value is not nil.
+func (pc *PostCreate) SetNillableModifiedTime(t *time.Time) *PostCreate {
+	if t != nil {
+		pc.SetModifiedTime(*t)
+	}
 	return pc
 }
 
@@ -160,10 +176,12 @@ func (pc *PostCreate) preSave() error {
 		return &ValidationError{Name: "body", err: errors.New("ent: missing required field \"body\"")}
 	}
 	if _, ok := pc.mutation.CreatedTime(); !ok {
-		return &ValidationError{Name: "created_time", err: errors.New("ent: missing required field \"created_time\"")}
+		v := post.DefaultCreatedTime()
+		pc.mutation.SetCreatedTime(v)
 	}
 	if _, ok := pc.mutation.ModifiedTime(); !ok {
-		return &ValidationError{Name: "modified_time", err: errors.New("ent: missing required field \"modified_time\"")}
+		v := post.DefaultModifiedTime()
+		pc.mutation.SetModifiedTime(v)
 	}
 	if _, ok := pc.mutation.Author(); !ok {
 		return &ValidationError{Name: "author", err: errors.New("ent: missing required field \"author\"")}

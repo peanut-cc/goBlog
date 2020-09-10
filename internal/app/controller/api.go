@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/peanut-cc/goBlog/internal/app/config"
@@ -28,6 +29,11 @@ const (
 	NOTICE_ERROR = "error"
 )
 
+const (
+	SUCCESS = iota
+	FAIL
+)
+
 // 全局API
 var APIs = make(map[string]func(c *gin.Context))
 
@@ -36,6 +42,7 @@ func init() {
 	APIs["account"] = apiAccount
 	APIs["blog"] = apiBlog
 	APIs["password"] = apiPassword
+	APIs["post-add"] = apiPostAdd
 }
 
 func apiAccount(c *gin.Context) {
@@ -114,26 +121,39 @@ func apiPassword(c *gin.Context) {
 	responseNotice(c, NOTICE_SUCCESS, "更新成功", "")
 }
 
-func responseNotice(c *gin.Context, typ, content, hl string) {
-	if hl != "" {
-		c.SetCookie("notice_highlight", hl, 86400, "/", "", true, false)
-	}
-	c.SetCookie("notice_type", typ, 86400, "/", "", true, false)
-	c.SetCookie("notice", fmt.Sprintf("[\"%s\"]", content), 86400, "/", "", true, false)
-	c.Redirect(http.StatusFound, c.Request.Referer())
-}
-
 func apiPostAdd(c *gin.Context) {
 	var (
 		err error
 		do  string
 		cid int
 	)
+	defer func() {
+		switch do {
+		case "auto":
+			if err != nil {
+				c.JSON(http.StatusOK, gin.H{"fail": FAIL, "time": time.Now().Format("15:04:05 PM"), "cid": cid})
+				return
+			}
+			c.JSON(http.StatusOK, gin.H{"success": SUCCESS, "time": time.Now().Format("15:04:05 PM"), "cid": cid})
+		case "save", "publish":
+			if err != nil {
+				if err != nil {
+					responseNotice(c, NOTICE_NOTICE, err.Error(), "")
+					return
+				}
+			}
+			uri := "/admin/manage-draft"
+			if do == "publish" {
+				uri = "/admin/profile"
+			}
+			c.Redirect(http.StatusFound, uri)
+		}
+	}()
 	do = c.PostForm("do")
 	slug := c.PostForm("slug")
 	title := c.PostForm("title")
 	text := c.PostForm("text")
-	category := c.PostForm("serie")
+	// category := c.PostForm("serie")
 	tag := c.PostForm("tags")
 	update := c.PostForm("update")
 	date := utils.CheckDate(c.PostForm("date"))
@@ -148,14 +168,28 @@ func apiPostAdd(c *gin.Context) {
 	cid, err = strconv.Atoi(c.PostForm("cid"))
 	//  表示新文章
 	if err != nil || cid < 1 {
-		global.EntClient.Post.Create().
+		newPost, err := global.EntClient.Post.Create().
 			SetAuthor("peanut").
 			SetBody(text).
 			SetTitle(title).
 			SetCreatedTime(date).
+			SetIsDraft(do != "publish").
 			Save(c)
+		if err != nil {
+			logger.StartSpan(c, logger.SetSpanFuncName("apiPostAdd")).Errorf("post create error:%v", err.Error())
+		} else {
+			UpdateMultiTags(c, tags, newPost.ID)
+		}
+		return
 	}
-
+	oldPost, err := global.EntClient.Post.Get(c, cid)
+	if err != nil {
+		logger.StartSpan(c, logger.SetSpanFuncName("apiPostAdd")).Errorf("post get error:%v", err.Error())
+		return
+	}
+	if utils.CheckBool(update) {
+		oldPost.Update().SetModifiedTime(time.Now()).Save(c)
+	}
 }
 
 func UpdateMultiTags(ctx context.Context, newTags []string, postID int) {
@@ -195,4 +229,13 @@ func IsInArray(name string, tagNameArray []string) bool {
 		}
 	}
 	return false
+}
+
+func responseNotice(c *gin.Context, typ, content, hl string) {
+	if hl != "" {
+		c.SetCookie("notice_highlight", hl, 86400, "/", "", true, false)
+	}
+	c.SetCookie("notice_type", typ, 86400, "/", "", true, false)
+	c.SetCookie("notice", fmt.Sprintf("[\"%s\"]", content), 86400, "/", "", true, false)
+	c.Redirect(http.StatusFound, c.Request.Referer())
 }

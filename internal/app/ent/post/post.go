@@ -2,6 +2,10 @@
 
 package post
 
+import (
+	"time"
+)
+
 const (
 	// Label holds the string label denoting the post type in the database.
 	Label = "post"
@@ -64,4 +68,11 @@ var (
 	// TagsPrimaryKey and TagsColumn2 are the table columns denoting the
 	// primary key for the tags relation (M2M).
 	TagsPrimaryKey = []string{"tag_id", "post_id"}
+)
+
+var (
+	// DefaultCreatedTime holds the default value on creation for the created_time field.
+	DefaultCreatedTime func() time.Time
+	// DefaultModifiedTime holds the default value on creation for the modified_time field.
+	DefaultModifiedTime func() time.Time
 )

@@ -2,8 +2,25 @@
 
 package ent
 
+import (
+	"time"
+
+	"github.com/peanut-cc/goBlog/internal/app/ent/post"
+	"github.com/peanut-cc/goBlog/internal/app/ent/schema"
+)
+
 // The init function reads all schema descriptors with runtime
 // code (default values, validators or hooks) and stitches it
 // to their package variables.
 func init() {
+	postFields := schema.Post{}.Fields()
+	_ = postFields
+	// postDescCreatedTime is the schema descriptor for created_time field.
+	postDescCreatedTime := postFields[2].Descriptor()
+	// post.DefaultCreatedTime holds the default value on creation for the created_time field.
+	post.DefaultCreatedTime = postDescCreatedTime.Default.(func() time.Time)
+	// postDescModifiedTime is the schema descriptor for modified_time field.
+	postDescModifiedTime := postFields[3].Descriptor()
+	// post.DefaultModifiedTime holds the default value on creation for the modified_time field.
+	post.DefaultModifiedTime = postDescModifiedTime.Default.(func() time.Time)
 }

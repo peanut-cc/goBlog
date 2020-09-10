@@ -48,9 +48,25 @@ func (pu *PostUpdate) SetCreatedTime(t time.Time) *PostUpdate {
 	return pu
 }
 
+// SetNillableCreatedTime sets the created_time field if the given value is not nil.
+func (pu *PostUpdate) SetNillableCreatedTime(t *time.Time) *PostUpdate {
+	if t != nil {
+		pu.SetCreatedTime(*t)
+	}
+	return pu
+}
+
 // SetModifiedTime sets the modified_time field.
 func (pu *PostUpdate) SetModifiedTime(t time.Time) *PostUpdate {
 	pu.mutation.SetModifiedTime(t)
+	return pu
+}
+
+// SetNillableModifiedTime sets the modified_time field if the given value is not nil.
+func (pu *PostUpdate) SetNillableModifiedTime(t *time.Time) *PostUpdate {
+	if t != nil {
+		pu.SetModifiedTime(*t)
+	}
 	return pu
 }
 
@@ -380,9 +396,25 @@ func (puo *PostUpdateOne) SetCreatedTime(t time.Time) *PostUpdateOne {
 	return puo
 }
 
+// SetNillableCreatedTime sets the created_time field if the given value is not nil.
+func (puo *PostUpdateOne) SetNillableCreatedTime(t *time.Time) *PostUpdateOne {
+	if t != nil {
+		puo.SetCreatedTime(*t)
+	}
+	return puo
+}
+
 // SetModifiedTime sets the modified_time field.
 func (puo *PostUpdateOne) SetModifiedTime(t time.Time) *PostUpdateOne {
 	puo.mutation.SetModifiedTime(t)
+	return puo
+}
+
+// SetNillableModifiedTime sets the modified_time field if the given value is not nil.
+func (puo *PostUpdateOne) SetNillableModifiedTime(t *time.Time) *PostUpdateOne {
+	if t != nil {
+		puo.SetModifiedTime(*t)
+	}
 	return puo
 }
 

@@ -92,3 +92,7 @@ func CheckDate(date string) time.Time {
 	}
 	return time.Now()
 }
+
+func CheckBool(str string) bool {
+	return str == "true" || str == "1"
+}

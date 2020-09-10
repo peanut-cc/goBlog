@@ -1,6 +1,8 @@
 package schema
 
 import (
+	"time"
+
 	"github.com/facebook/ent"
 	"github.com/facebook/ent/schema/edge"
 	"github.com/facebook/ent/schema/field"
@@ -16,8 +18,8 @@ func (Post) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("title"),
 		field.String("body"),
-		field.Time("created_time"),
-		field.Time("modified_time"),
+		field.Time("created_time").Default(time.Now),
+		field.Time("modified_time").Default(time.Now),
 		field.String("excerpt").Optional(),
 		field.String("author"),
 		// 是否是草稿
