@@ -40,7 +40,7 @@ var (
 	// PostsColumns holds the columns for the "posts" table.
 	PostsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "title", Type: field.TypeString},
+		{Name: "title", Type: field.TypeString, Unique: true},
 		{Name: "body", Type: field.TypeString},
 		{Name: "created_time", Type: field.TypeTime},
 		{Name: "modified_time", Type: field.TypeTime},

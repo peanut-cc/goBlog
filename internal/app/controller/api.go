@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
@@ -125,7 +124,7 @@ func apiPostAdd(c *gin.Context) {
 	var (
 		err error
 		do  string
-		cid int
+		cid string
 	)
 	defer func() {
 		switch do {
@@ -157,6 +156,7 @@ func apiPostAdd(c *gin.Context) {
 	tag := c.PostForm("tags")
 	update := c.PostForm("update")
 	date := utils.CheckDate(c.PostForm("date"))
+	cid = c.PostForm("cid")
 	if slug == "" || title == "" || text == "" {
 		err = errors.New("参数错误")
 		return
@@ -165,9 +165,14 @@ func apiPostAdd(c *gin.Context) {
 	if tag != "" {
 		tags = strings.Split(tag, ",")
 	}
-	cid, err = strconv.Atoi(c.PostForm("cid"))
+	// cid, err = strconv.Atoi(c.PostForm("cid"))
+	// if c.PostForm("cid") == "" {
+
+	// }
+	oldPost, err := global.EntClient.Post.Query().Where(post.TitleEQ(title)).Only(c)
 	//  表示新文章
-	if err != nil || cid < 1 {
+	logger.Warnf(c, "cid is %v", cid)
+	if cid == "" || err != nil {
 		newPost, err := global.EntClient.Post.Create().
 			SetAuthor("peanut").
 			SetBody(text).
@@ -182,11 +187,11 @@ func apiPostAdd(c *gin.Context) {
 		}
 		return
 	}
-	oldPost, err := global.EntClient.Post.Get(c, cid)
 	if err != nil {
 		logger.StartSpan(c, logger.SetSpanFuncName("apiPostAdd")).Errorf("post get error:%v", err.Error())
 		return
 	}
+	UpdateMultiTags(c, tags, oldPost.ID)
 	if utils.CheckBool(update) {
 		oldPost.Update().SetModifiedTime(time.Now()).Save(c)
 	}

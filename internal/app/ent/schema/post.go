@@ -16,7 +16,7 @@ type Post struct {
 // Fields of the Post.
 func (Post) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("title"),
+		field.String("title").Unique(),
 		field.String("body"),
 		field.Time("created_time").Default(time.Now),
 		field.Time("modified_time").Default(time.Now),
