@@ -170,8 +170,15 @@ func apiPostAdd(c *gin.Context) {
 
 	// }
 	oldPost, err := global.EntClient.Post.Query().Where(post.TitleEQ(title)).Only(c)
+	if err == nil {
+		// 已经存在的文章
+		UpdateMultiTags(c, tags, oldPost.ID)
+		if utils.CheckBool(update) {
+			oldPost.Update().SetModifiedTime(time.Now()).Save(c)
+		}
+		return
+	}
 	//  表示新文章
-	logger.Warnf(c, "cid is %v", cid)
 	if cid == "" || err != nil {
 		newPost, err := global.EntClient.Post.Create().
 			SetAuthor("peanut").
@@ -186,14 +193,6 @@ func apiPostAdd(c *gin.Context) {
 			UpdateMultiTags(c, tags, newPost.ID)
 		}
 		return
-	}
-	if err != nil {
-		logger.StartSpan(c, logger.SetSpanFuncName("apiPostAdd")).Errorf("post get error:%v", err.Error())
-		return
-	}
-	UpdateMultiTags(c, tags, oldPost.ID)
-	if utils.CheckBool(update) {
-		oldPost.Update().SetModifiedTime(time.Now()).Save(c)
 	}
 }
 
