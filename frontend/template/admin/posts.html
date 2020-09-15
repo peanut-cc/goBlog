@@ -20,14 +20,11 @@
                         </div>
                     </div>
                     <div class="search" role="search">
-                        {{if or .KW (gt .Serie 0)}}<a href="/admin/manage-posts">« 取消筛选</a>{{end}}
-                        <input type="text" class="text-s" placeholder="请输入关键字" value="{{if .KW}}{{.KW}}{{end}}"
-                            name="keywords" />
                         <select name="serie">
                             <option value="">所有专题</option>
                             {{range .Series}}
                             <option {{if eq $.Serie .ID}}selected{{end}} value="{{.ID}}">{{.Name}}
-                                {{end}}
+                            {{end}}
                         </select>
                         <button type="submit" class="btn btn-s">筛选</button>
                     </div>
@@ -52,7 +49,7 @@
                                 <th> </th>
                                 <th>标题</th>
                                 <th>作者</th>
-                                <th>专题</th>
+                                <th>分类</th>
                                 <th>创建</th>
                                 <th>更新</th>
                             </tr>
@@ -104,9 +101,9 @@
                         {{ range $k,$v := $PageRet}}
                             {{ if ne $v -1}}
                                 {{ if eq $v $CurrentPage }}
-                                    <li class="current"><a href="/admin/manage-posts?page={{$v}}">{{ $k }}</a></li>
+                                    <li class="current"><a href="/admin/manage-posts?page={{$v}}">{{ $v }}</a></li>
                                 {{ else }}
-                                    <li><a href="/admin/manage-posts?page={{$v}}">{{ $k }}</a></li>
+                                    <li><a href="/admin/manage-posts?page={{$v}}">{{ $v }}</a></li>
                                 {{ end }}
                             {{ else }}
                                 <li><span>...</span></li>

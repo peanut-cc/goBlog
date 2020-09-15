@@ -16,6 +16,7 @@ import (
 
 	ipost "github.com/peanut-cc/goBlog/internal/app/ent/post"
 	iuser "github.com/peanut-cc/goBlog/internal/app/ent/user"
+	icategory "github.com/peanut-cc/goBlog/internal/app/ent/category"
 
 	"github.com/gin-gonic/contrib/sessions"
 
@@ -134,7 +135,7 @@ func HandlePosts(c *gin.Context) {
 	tmp := c.Query("serie")
 	se, err := strconv.Atoi(tmp)
 	if err != nil {
-		logger.Warnf(c,"error:%v",err)
+		logger.Warnf(c, "error:%v", err)
 		// logger.Errorf(c, "serie args error:%v", err.Error())
 		// c.Redirect(http.StatusFound, "/admin/profile")
 		// return
@@ -172,6 +173,28 @@ func HandlePosts(c *gin.Context) {
 	h["Pagination"] = pagination
 	c.Status(http.StatusOK)
 	RenderHTMLBack(c, "admin-posts", h)
+}
+
+func HandleCategories(c *gin.Context) {
+	blogInfo, err := global.EntClient.Blog.Query().First(c)
+	if err != nil {
+		logger.Errorf(c, "ent orm query blog info error:%v", err.Error())
+		c.Redirect(http.StatusFound, "/admin/profile")
+		return
+	}
+	h := gin.H{}
+	h["Manage"] = true
+	h["Path"] = c.Request.URL.Path
+	h["Title"] = "专题管理 | " + blogInfo.Btitle
+	categories, err := global.EntClient.Category.Query().All(c)
+	if err != nil {
+		logger.Errorf(c, "ent orm query category info error:%v", err.Error())
+		c.Redirect(http.StatusFound, "/admin/profile")
+		return
+	}
+	h["Categories"] = categories
+	c.Status(http.StatusOK)
+	RenderHTMLBack(c, "admin-series", h)
 }
 
 // 渲染 html

@@ -35,12 +35,12 @@
                                 <th> </th>
                                 <th>ID</th>
                                 <th>名称</th>
-                                <th>创建</th>
+                                <!-- <th>创建</th> -->
                                 <th>文章数</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {{range .List}}
+                            {{range .Categories}}
                             <tr id="mid-category-{{.ID}}">
                                 <td>
                                     <input type="checkbox" value="{{.ID}}" name="mid[]" />
@@ -50,8 +50,8 @@
                                     <a href="/admin/add-serie?mid={{.ID}}">{{.Name}}</a>
                                     <a target="_blank" href="/series.html#toc-{{.ID}}" title="浏览 {{.Name}}"><i class="i-exlink"></i></a>
                                 </td>
-                                <td>{{dateformat .CreateTime "2006/01/02 15:04"}}</td>
-                                <td><a class="balloon-button left size-50" href="#">{{len .Articles}}</a></td>
+                                <!-- <td>{{dateformat .CreateTime "2006/01/02 15:04"}}</td> -->
+                                <td><a class="balloon-button left size-50" href="#">{{len .Edges.Posts}}</a></td>
                             </tr>
                             {{end}}
                         </tbody>
