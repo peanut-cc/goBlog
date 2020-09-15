@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -42,6 +43,7 @@ func init() {
 	APIs["blog"] = apiBlog
 	APIs["password"] = apiPassword
 	APIs["post-add"] = apiPostAdd
+	APIs["serie-add"] = apiSerieAdd
 }
 
 func apiAccount(c *gin.Context) {
@@ -233,6 +235,40 @@ func IsInArray(name string, tagNameArray []string) bool {
 		}
 	}
 	return false
+}
+
+// 分类的新增和删除
+func apiSerieAdd(c *gin.Context) {
+	name := c.PostForm("name")
+	if name == "" {
+		responseNotice(c, NOTICE_NOTICE, "参数错误", "")
+		return
+	}
+	mid, err := strconv.Atoi(c.PostForm("mid"))
+	if err == nil && mid > 0 {
+		// 更新分类名称
+		category, err := global.EntClient.Category.Get(c, mid)
+		if err != nil {
+			responseNotice(c, NOTICE_NOTICE, "未找到数据", "")
+			return
+		}
+		_, err = category.Update().SetName(name).Save(c)
+		if err != nil {
+			logger.Errorf(c, "category update name error:", err.Error())
+			responseNotice(c, NOTICE_NOTICE, err.Error(), "")
+			return
+		}
+	} else {
+		// 新增分类
+		_, err = global.EntClient.Category.Create().SetName(name).Save(c)
+		if err != nil {
+			logger.Errorf(c, "category create error:", err.Error())
+			responseNotice(c, NOTICE_NOTICE, err.Error(), "")
+			return
+		}
+	}
+	c.Redirect(http.StatusFound, "/admin/manage-series")
+	return
 }
 
 func responseNotice(c *gin.Context, typ, content, hl string) {
