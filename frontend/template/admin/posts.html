@@ -12,7 +12,8 @@
                             <input type="checkbox" class="typecho-table-select-all" />
                         </label>
                         <div class="btn-group btn-drop">
-                            <button class="btn dropdown-toggle btn-s" type="button"><i class="sr-only">操作</i>选中项 <i class="i-caret-down"></i></button>
+                            <button class="btn dropdown-toggle btn-s" type="button"><i class="sr-only">操作</i>选中项 <i
+                                    class="i-caret-down"></i></button>
                             <ul class="dropdown-menu">
                                 <li><a lang="你确认要删除这些文章吗?" href="/admin/api/post-delete">删除</a></li>
                             </ul>
@@ -20,12 +21,13 @@
                     </div>
                     <div class="search" role="search">
                         {{if or .KW (gt .Serie 0)}}<a href="/admin/manage-posts">« 取消筛选</a>{{end}}
-                        <input type="text" class="text-s" placeholder="请输入关键字" value="{{if .KW}}{{.KW}}{{end}}" name="keywords" />
+                        <input type="text" class="text-s" placeholder="请输入关键字" value="{{if .KW}}{{.KW}}{{end}}"
+                            name="keywords" />
                         <select name="serie">
                             <option value="">所有专题</option>
                             {{range .Series}}
-                                <option {{if eq $.Serie .ID}}selected{{end}} value="{{.ID}}">{{.Name}}
-                            {{end}}
+                            <option {{if eq $.Serie .ID}}selected{{end}} value="{{.ID}}">{{.Name}}
+                                {{end}}
                         </select>
                         <button type="submit" class="btn btn-s">筛选</button>
                     </div>
@@ -56,20 +58,22 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {{range .List}}
+                            {{range .Posts}}
                             <tr id="post-{{.ID}}">
                                 <td>
                                     <input type="checkbox" value="{{.ID}}" name="cid[]" />
                                 </td>
-                                <td><a href="/post/{{.Slug}}.html#comments" class="balloon-button size-1">{{.Count}}</a></td>
+                                <td><a href="" class="balloon-button size-1">1</a>
+                                </td>
                                 <td>
                                     <a href="/admin/write-post?cid={{.ID}}">{{.Title}}</a>
-                                    <a target="_blank" href="/post/{{.Slug}}.html" title="浏览 {{.Title}}"><i class="i-exlink"></i></a>
+                                    <a target="_blank" href="" title="浏览 {{.Title}}"><i
+                                            class="i-exlink"></i></a>
                                 </td>
                                 <td>{{.Author}}</td>
-                                <td>{{if gt .SerieID 0}}专题ID:{{.SerieID}}{{else}}--{{end}}</td>
-                                <td>{{dateformat .CreateTime "06/01/02 15:04"}}</td>
-                                <td>{{dateformat .UpdateTime "06/01/02 15:04"}}</td>
+                                <td>test</td>
+                                <td>{{dateformat .CreatedTime "06/01/02 15:04"}}</td>
+                                <td>{{dateformat .ModifiedTime "06/01/02 15:04"}}</td>
                             </tr>
                             {{end}}
                         </tbody>
@@ -84,18 +88,33 @@
                             <input type="checkbox" class="typecho-table-select-all" />
                         </label>
                         <div class="btn-group btn-drop">
-                            <button class="btn dropdown-toggle btn-s" type="button"><i class="sr-only">操作</i>选中项 <i class="i-caret-down"></i></button>
+                            <button class="btn dropdown-toggle btn-s" type="button"><i class="sr-only">操作</i>选中项 <i
+                                    class="i-caret-down"></i></button>
                             <ul class="dropdown-menu">
                                 <li><a lang="你确认要删除这些文章吗?" href="/admin/api/post-delete">删除</a></li>
                             </ul>
                         </div>
                     </div>
                     <ul class="typecho-pager">
-                        {{if .Prev}}<li class="prev"><a href="/admin/manage-posts?{{html .Prev}}">«</a></li>{{end}}
-                        {{range $k,$v := .PP}}
-                        <li {{if eq $.Cur $k}}class="current"{{end}}><a href="/admin/manage-posts?{{html $v}}">{{$k}}</a></li>
-                        {{end}}
-                        {{if .Next}}<li class="next"><a href="/admin/manage-posts?{{html .Next}}">»</a></li>{{end}}
+                        {{ if .Pagination.HasPrev }}
+                            <li class="prev"><a href="/admin/manage-posts?page={{.Pagination.PrevNum}}">«</a></li>
+                        {{ end }}
+                        {{ $PageRet := .Pagination.PageRet }}
+                        {{ $CurrentPage := .Pagination.CurrentPage }}
+                        {{ range $k,$v := $PageRet}}
+                            {{ if ne $v -1}}
+                                {{ if eq $v $CurrentPage }}
+                                    <li class="current"><a href="/admin/manage-posts?page={{$v}}">{{ $k }}</a></li>
+                                {{ else }}
+                                    <li><a href="/admin/manage-posts?page={{$v}}">{{ $k }}</a></li>
+                                {{ end }}
+                            {{ else }}
+                                <li><span>...</span></li>
+                            {{ end }}
+                        {{ end }}
+                        {{ if .Pagination.HasNext }}
+                            <li class="next"><a href="/admin/manage-posts?page={{.Pagination.NextNum}}">»</a></li>
+                        {{ end }}
                     </ul>
                 </form>
             </div>
@@ -106,20 +125,20 @@
     <!-- end .typecho-page-main -->
 </div>
 <script>
-(function() {
-    $(document).ready(function() {
-        $('.typecho-list-table').tableSelectable({
-            checkEl: 'input[type=checkbox]',
-            rowEl: 'tr',
-            selectAllEl: '.typecho-table-select-all',
-            actionEl: '.dropdown-menu a,button.btn-operate'
-        });
+    (function () {
+        $(document).ready(function () {
+            $('.typecho-list-table').tableSelectable({
+                checkEl: 'input[type=checkbox]',
+                rowEl: 'tr',
+                selectAllEl: '.typecho-table-select-all',
+                actionEl: '.dropdown-menu a,button.btn-operate'
+            });
 
-        $('.btn-drop').dropdownMenu({
-            btnEl: '.dropdown-toggle',
-            menuEl: '.dropdown-menu'
+            $('.btn-drop').dropdownMenu({
+                btnEl: '.dropdown-toggle',
+                menuEl: '.dropdown-menu'
+            });
         });
-    });
-})();
+    })();
 </script>
 {{end}}

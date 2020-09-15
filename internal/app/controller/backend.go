@@ -124,7 +124,54 @@ func HandlePost(c *gin.Context) {
 	h["Path"] = c.Request.URL.Path
 	h["Domain"] = config.C.Server.Domain
 	c.Status(http.StatusOK)
-	RenderHTMLBack(c, "admin-post",h)
+	RenderHTMLBack(c, "admin-post", h)
+}
+
+// post list
+func HandlePosts(c *gin.Context) {
+	h := gin.H{}
+	blogInfo, err := global.EntClient.Blog.Query().First(c)
+	tmp := c.Query("serie")
+	se, err := strconv.Atoi(tmp)
+	if err != nil {
+		logger.Warnf(c,"error:%v",err)
+		// logger.Errorf(c, "serie args error:%v", err.Error())
+		// c.Redirect(http.StatusFound, "/admin/profile")
+		// return
+	}
+	pg, err := strconv.Atoi(c.Query("page"))
+	if err != nil || pg < 1 {
+		pg = 1
+	}
+	allPosts, err := global.EntClient.Post.Query().All(c)
+	if err != nil {
+		logger.Errorf(c, "query posts error:%v", err.Error())
+		c.Redirect(http.StatusFound, "/admin/profile")
+		return
+	}
+	pagination := &Pagination{
+		CurrentPage: pg,
+		PerPage:     5,
+		Total:       len(allPosts),
+	}
+	start := (pg - 1) * 5
+	var end int
+	if start+5 > len(allPosts) {
+		end = len(allPosts)
+	} else {
+		end = start + 5
+	}
+	perPosts := allPosts[start:end]
+
+	h["Console"] = true
+	h["Path"] = c.Request.URL.Path
+	h["Title"] = "个人配置 | " + blogInfo.Btitle
+	h["Serie"] = se
+	h["Posts"] = perPosts
+	h["PostCount"] = len(allPosts)
+	h["Pagination"] = pagination
+	c.Status(http.StatusOK)
+	RenderHTMLBack(c, "admin-posts", h)
 }
 
 // 渲染 html
