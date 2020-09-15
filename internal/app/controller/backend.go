@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/peanut-cc/goBlog/internal/app/config"
+	"github.com/peanut-cc/goBlog/internal/app/ent"
 
 	"github.com/peanut-cc/goBlog/internal/app/global"
 
@@ -16,7 +17,6 @@ import (
 
 	ipost "github.com/peanut-cc/goBlog/internal/app/ent/post"
 	iuser "github.com/peanut-cc/goBlog/internal/app/ent/user"
-	icategory "github.com/peanut-cc/goBlog/internal/app/ent/category"
 
 	"github.com/gin-gonic/contrib/sessions"
 
@@ -195,6 +195,32 @@ func HandleCategories(c *gin.Context) {
 	h["Categories"] = categories
 	c.Status(http.StatusOK)
 	RenderHTMLBack(c, "admin-series", h)
+}
+
+func HandleCategory(c *gin.Context) {
+	id, err := strconv.Atoi(c.Query("mid"))
+	blogInfo, err := global.EntClient.Blog.Query().First(c)
+	if err != nil {
+		logger.Errorf(c, "ent orm query blog info error:%v", err.Error())
+		c.Redirect(http.StatusFound, "/admin/manage-series")
+		return
+	}
+	h := gin.H{}
+	category, err := global.EntClient.Category.Get(c, id)
+	if ent.IsNotFound(err) {
+		h["Title"] = "新增分类 | " + blogInfo.Btitle
+	} else if err != nil {
+		logger.Errorf(c, "ent orm query category error:%v", err.Error())
+		c.Redirect(http.StatusFound, "/admin/manage-series")
+		return
+	} else {
+		h["Title"] = "编辑分类 | " + blogInfo.Btitle
+		h["Category"] = category
+	}
+	h["Manage"] = true
+	h["Path"] = c.Request.URL.Path
+	c.Status(http.StatusOK)
+	RenderHTMLBack(c, "admin-serie", h)
 }
 
 // 渲染 html

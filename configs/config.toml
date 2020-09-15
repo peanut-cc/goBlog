@@ -4,7 +4,7 @@ PrintConfig = true
 
 [server]
 RunMode = "debug"
-HTTPPort = 8989
+HTTPPort = 8080
 # http优雅关闭等待超时时长(单位秒)
 ShutdownTimeout = 30
 Domain = "syncd.cn"
@@ -39,7 +39,7 @@ OutputFile = "logs/blog.log"
 
 [MySQL]
 # 连接地址
-Host = "10.211.55.3"
+Host = "192.168.1.106"
 # 连接端口
 Port= 3306
 # 用户名
