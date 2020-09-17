@@ -66,6 +66,8 @@ func NewRouter(ctx context.Context) *gin.Engine {
 		auth.GET("/manage-posts", controller.HandlePosts)
 		auth.GET("/manage-series", controller.HandleCategories)
 		auth.GET("/add-serie", controller.HandleCategory)
+		auth.GET("/manage-tags", controller.HandleTags)
+		auth.GET("/manage-draft", controller.HandleDraft)
 	}
 
 	return app

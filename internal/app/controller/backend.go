@@ -16,6 +16,7 @@ import (
 	"github.com/peanut-cc/goBlog/pkg/logger"
 
 	"github.com/peanut-cc/goBlog/internal/app/ent/category"
+	"github.com/peanut-cc/goBlog/internal/app/ent/post"
 	ipost "github.com/peanut-cc/goBlog/internal/app/ent/post"
 	iuser "github.com/peanut-cc/goBlog/internal/app/ent/user"
 
@@ -238,6 +239,53 @@ func HandleCategory(c *gin.Context) {
 	h["Path"] = c.Request.URL.Path
 	c.Status(http.StatusOK)
 	RenderHTMLBack(c, "admin-serie", h)
+}
+
+func HandleTags(c *gin.Context) {
+	h := gin.H{}
+	blogInfo, err := global.EntClient.Blog.Query().First(c)
+	if err != nil {
+		logger.Errorf(c, "ent orm query blog info error:%v", err.Error())
+		c.Redirect(http.StatusFound, "/admin/manage-series")
+		return
+	}
+	tags, err := global.EntClient.Tag.Query().All(c)
+	if err != nil {
+		logger.Errorf(c, "ent orm query blog info error:%v", err.Error())
+		c.Redirect(http.StatusFound, "/admin/manage-posts")
+		return
+	}
+	h["Manage"] = true
+	h["Path"] = c.Request.URL.Path
+	h["Title"] = "标签管理 | " + blogInfo.Btitle
+	h["Tags"] = tags
+	c.Status(http.StatusOK)
+	RenderHTMLBack(c, "admin-tags", h)	
+}
+
+func HandleDraft(c *gin.Context) {
+
+	blogInfo, err := global.EntClient.Blog.Query().First(c)
+		
+	if err != nil {
+		logger.Errorf(c, "ent orm query blog info error:%v", err.Error())
+		c.Redirect(http.StatusFound, "/admin/manage-posts")
+		return
+	}
+
+	draftPosts, err := global.EntClient.Post.Query().WithCategory().Where(post.IsDraft(true)).All(c)
+	if err != nil {
+		logger.Errorf(c, "ent orm query blog info error:%v", err.Error())
+		c.Redirect(http.StatusFound, "/admin/manage-posts")
+		return
+	}
+	h := gin.H{}
+	h["Manage"] = true
+	h["Path"] = c.Request.URL.Path
+	h["Title"] = "草稿箱 | " + blogInfo.Btitle
+	h["DraftPosts"] = draftPosts
+	c.Status(http.StatusOK)
+	RenderHTMLBack(c, "admin-draft", h)
 }
 
 // 渲染 html

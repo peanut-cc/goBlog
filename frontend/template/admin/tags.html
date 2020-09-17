@@ -13,15 +13,15 @@
                         </label>
                         <div class="btn-group btn-drop">
                             <button class="btn dropdown-toggle btn-s" type="button"><i class="sr-only">操作</i>选中项 <i class="i-caret-down"></i></button>
-                            <!-- <ul class="dropdown-menu"> -->
-                                <!-- <li><a lang="你确认要删除这些标签吗?" href="/admin/api/tag-delete">删除</a></li> -->
-                            <!-- </ul> -->
+                            <!-- <ul class="dropdown-menu">
+                                <li><a lang="你确认要删除这些标签吗?" href="/admin/api/tag-delete">删除</a></li>
+                            </ul> -->
                         </div>
                     </div>
                 </div>
                 <ul class="typecho-list-notable tag-list clearfix">
-                    {{range $k,$v:=.List}}
-                    <li class="size-5"><input type="checkbox" name="mid[]" />{{$k}}<i class="i-edit"></i></li>
+                    {{range $k,$v:=.Tags}}
+                    <li class="size-5"><input type="checkbox" name="mid[]" />{{$v.Name}}<i class="i-edit"></i></li>
                     {{end}}
                 </ul>
             </form>
