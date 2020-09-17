@@ -203,7 +203,7 @@ func HandleCategories(c *gin.Context) {
 	h["Manage"] = true
 	h["Path"] = c.Request.URL.Path
 	h["Title"] = "专题管理 | " + blogInfo.Btitle
-	categories, err := global.EntClient.Category.Query().All(c)
+	categories, err := global.EntClient.Category.Query().WithPosts().All(c)
 	if err != nil {
 		logger.Errorf(c, "ent orm query category info error:%v", err.Error())
 		c.Redirect(http.StatusFound, "/admin/profile")
