@@ -20,6 +20,11 @@
                         </div>
                     </div>
                     <div class="search" role="search">
+                        <select name="publish">
+                            <option value="0" {{if eq .Publish 0 }}selected{{end}}>所有文章</option>
+                            <option value="1" {{if eq .Publish 1 }}selected{{end}}>未发布</option>
+                            <option value="2" {{if eq .Publish 2 }}selected{{end}}>已发布</option>
+                        </select>
                         <select name="serie">
                             <option value="0" {{if eq $.Serie 0 }}selected{{end}}>所有专题</option>
                             {{range .Categories}}

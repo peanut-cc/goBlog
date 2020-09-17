@@ -46,8 +46,6 @@
                     <li {{if eq .Path "/admin/manage-series"}}class="focus" {{end}}><a target="_self" href="/admin/manage-series">分类</a></li>
                     {{if eq .Path "/admin/add-serie"}}<li class="focus"><a target="_self" href="/admin/add-serie">{{if .Edit}}编辑分类{{else}}新增分类{{end}}</a></li>{{end}}
                     <li class="last {{if eq .Path "/admin/manage-tags"}}focus{{end}}"><a target="_self" href="/admin/manage-tags">标签</a></li>
-                    <li class="last {{if eq .Path "/admin/manage-draft"}}focus{{end}}"><a target="_self" href="/admin/manage-draft">草稿箱</a></li>
-                    <li class="last {{if eq .Path "/admin/manage-trash"}}focus{{end}}"><a target="_self" href="/admin/manage-trash">回收箱</a></li>
                 </ul>
             </ul>
             <ul class="root {{if .Setting}}focus{{end}}">

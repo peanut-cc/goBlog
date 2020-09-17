@@ -16,7 +16,6 @@ import (
 	"github.com/peanut-cc/goBlog/pkg/logger"
 
 	"github.com/peanut-cc/goBlog/internal/app/ent/category"
-	"github.com/peanut-cc/goBlog/internal/app/ent/post"
 	ipost "github.com/peanut-cc/goBlog/internal/app/ent/post"
 	iuser "github.com/peanut-cc/goBlog/internal/app/ent/user"
 
@@ -147,20 +146,33 @@ func HandlePosts(c *gin.Context) {
 	se, err := strconv.Atoi(tmp)
 	if err != nil {
 		logger.Warnf(c, "error:%v", err)
+		se = 0
 	}
 	pg, err := strconv.Atoi(c.Query("page"))
 	if err != nil || pg < 1 {
 		pg = 1
 	}
-	var allPosts []*ent.Post
-	var err2 error
-	if se > 0 {
-		allPosts, err2 = global.EntClient.Post.Query().WithCategory().Where(ipost.HasCategoryWith(category.IDEQ(se))).All(c)
-	} else {
-		allPosts, err2 = global.EntClient.Post.Query().WithCategory().All(c)
+
+	pubTmp := c.Query("publish")
+	pub, err := strconv.Atoi(pubTmp)
+	if err != nil {
+		logger.Warnf(c, "error:%v", err)
+		pub = 0
 	}
-	
-	if err2 != nil {
+
+	var allPostQuery *ent.PostQuery
+	if se > 0 {
+		allPostQuery =  global.EntClient.Post.Query().WithCategory().Where(ipost.HasCategoryWith(category.IDEQ(se)))
+	} else {
+		allPostQuery = global.EntClient.Post.Query().WithCategory()
+	}
+	if pub == 1 {
+		allPostQuery = allPostQuery.Where(ipost.IsDraftEQ(true))
+	} else if pub == 2 {
+		allPostQuery = allPostQuery.Where(ipost.IsDraftEQ(false))
+	}
+	allPosts, err := allPostQuery.All(c)
+	if err != nil {
 		logger.Errorf(c, "query posts error:%v", err.Error())
 		c.Redirect(http.StatusFound, "/admin/manage-posts")
 		return
@@ -189,6 +201,7 @@ func HandlePosts(c *gin.Context) {
 	h["PostCount"] = len(allPosts)
 	h["Pagination"] = pagination
 	h["Serie"] = se
+	h["Publish"] = pub
 	c.Status(http.StatusOK)
 	RenderHTMLBack(c, "admin-posts", h)
 }
@@ -263,30 +276,6 @@ func HandleTags(c *gin.Context) {
 	RenderHTMLBack(c, "admin-tags", h)	
 }
 
-func HandleDraft(c *gin.Context) {
-
-	blogInfo, err := global.EntClient.Blog.Query().First(c)
-		
-	if err != nil {
-		logger.Errorf(c, "ent orm query blog info error:%v", err.Error())
-		c.Redirect(http.StatusFound, "/admin/manage-posts")
-		return
-	}
-
-	draftPosts, err := global.EntClient.Post.Query().WithCategory().Where(post.IsDraft(true)).All(c)
-	if err != nil {
-		logger.Errorf(c, "ent orm query blog info error:%v", err.Error())
-		c.Redirect(http.StatusFound, "/admin/manage-posts")
-		return
-	}
-	h := gin.H{}
-	h["Manage"] = true
-	h["Path"] = c.Request.URL.Path
-	h["Title"] = "草稿箱 | " + blogInfo.Btitle
-	h["DraftPosts"] = draftPosts
-	c.Status(http.StatusOK)
-	RenderHTMLBack(c, "admin-draft", h)
-}
 
 // 渲染 html
 func RenderHTMLBack(c *gin.Context, name string, data gin.H) {

@@ -23,7 +23,7 @@ func (Post) Fields() []ent.Field {
 		field.String("excerpt").Optional(),
 		field.String("author"),
 		// 是否是草稿
-		field.Bool("is_Draft"),
+		field.Bool("is_Draft").Default(false),
 	}
 }
 
