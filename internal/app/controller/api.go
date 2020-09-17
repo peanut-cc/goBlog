@@ -13,6 +13,7 @@ import (
 	"github.com/peanut-cc/goBlog/internal/app/config"
 	"github.com/peanut-cc/goBlog/internal/app/ent"
 	"github.com/peanut-cc/goBlog/internal/app/ent/post"
+	"github.com/peanut-cc/goBlog/internal/app/ent/tag"
 	"github.com/peanut-cc/goBlog/internal/app/ent/user"
 	"github.com/peanut-cc/goBlog/internal/app/global"
 	"github.com/peanut-cc/goBlog/internal/app/iutils"
@@ -44,6 +45,7 @@ func init() {
 	APIs["password"] = apiPassword
 	APIs["post-add"] = apiPostAdd
 	APIs["serie-add"] = apiSerieAdd
+	APIs["serie-delete"] = apiCategoryDelete
 }
 
 func apiAccount(c *gin.Context) {
@@ -154,7 +156,7 @@ func apiPostAdd(c *gin.Context) {
 	slug := c.PostForm("slug")
 	title := c.PostForm("title")
 	text := c.PostForm("text")
-	// category := c.PostForm("serie")
+	category := c.PostForm("serie")
 	tag := c.PostForm("tags")
 	update := c.PostForm("update")
 	date := utils.CheckDate(c.PostForm("date"))
@@ -167,16 +169,21 @@ func apiPostAdd(c *gin.Context) {
 	if tag != "" {
 		tags = strings.Split(tag, ",")
 	}
-	// cid, err = strconv.Atoi(c.PostForm("cid"))
-	// if c.PostForm("cid") == "" {
 
-	// }
 	oldPost, err := global.EntClient.Post.Query().Where(post.TitleEQ(title)).Only(c)
 	if err == nil {
 		// 已经存在的文章
 		UpdateMultiTags(c, tags, oldPost.ID)
 		if utils.CheckBool(update) {
 			oldPost.Update().SetModifiedTime(time.Now()).Save(c)
+		}
+		logger.Warnf(c, "aa:%v", category)
+		if category != "" {
+			categoryID, err2 := strconv.Atoi(category)
+			logger.Warnf(c, "bb:%v", categoryID)
+			if err2 == nil {
+				oldPost.Update().SetCategoryID(categoryID).Save(c)
+			}
 		}
 		return
 	}
@@ -193,6 +200,12 @@ func apiPostAdd(c *gin.Context) {
 			logger.StartSpan(c, logger.SetSpanFuncName("apiPostAdd")).Errorf("post create error:%v", err.Error())
 		} else {
 			UpdateMultiTags(c, tags, newPost.ID)
+			if category != "" {
+				categoryID, err := strconv.Atoi(category)
+				if err == nil {
+					newPost.Update().SetCategoryID(categoryID).Save(c)
+				}
+			}
 		}
 		return
 	}
@@ -217,7 +230,12 @@ func UpdateMultiTags(ctx context.Context, newTags []string, postID int) {
 	var needToAddTag []*ent.TagCreate
 	for _, newTag := range newTags {
 		if !IsInArray(newTag, oldTagNames) {
-			needToAddTag = append(needToAddTag, global.EntClient.Tag.Create().SetName(newTag))
+			_tag, err := global.EntClient.Tag.Query().Where(tag.NameEQ(newTag)).Only(ctx)
+			if ent.IsNotFound(err) {
+				needToAddTag = append(needToAddTag, global.EntClient.Tag.Create().SetName(newTag))
+			} else {
+				post.Update().AddTags(_tag).Save(ctx)
+			}
 		}
 	}
 	addTags, err := global.EntClient.Tag.CreateBulk(needToAddTag...).Save(ctx)
@@ -269,6 +287,23 @@ func apiSerieAdd(c *gin.Context) {
 	}
 	c.Redirect(http.StatusFound, "/admin/manage-series")
 	return
+}
+
+func apiCategoryDelete(c *gin.Context) {
+	for _, v := range c.PostFormArray("mid[]") {
+		id, err := strconv.Atoi(v)
+		if err != nil || id < 1 {
+			responseNotice(c, NOTICE_NOTICE, err.Error(), "")
+			return
+		}
+		err = global.EntClient.Category.DeleteOneID(id).Exec(c)
+		if err != nil {
+			logger.Errorf(c, "api category delete error:", err.Error())
+			responseNotice(c, NOTICE_NOTICE, err.Error(), "")
+			return
+		}
+	}
+	responseNotice(c, NOTICE_SUCCESS, "删除成功", "")
 }
 
 func responseNotice(c *gin.Context, typ, content, hl string) {

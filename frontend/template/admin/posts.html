@@ -68,7 +68,7 @@
                                             class="i-exlink"></i></a>
                                 </td>
                                 <td>{{.Author}}</td>
-                                <td>test</td>
+                                <td>{{ if .Edges.Category }}{{ .Edges.Category.Name }}{{end}}</td>
                                 <td>{{dateformat .CreatedTime "06/01/02 15:04"}}</td>
                                 <td>{{dateformat .ModifiedTime "06/01/02 15:04"}}</td>
                             </tr>
