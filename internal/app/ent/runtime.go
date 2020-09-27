@@ -23,4 +23,8 @@ func init() {
 	postDescModifiedTime := postFields[3].Descriptor()
 	// post.DefaultModifiedTime holds the default value on creation for the modified_time field.
 	post.DefaultModifiedTime = postDescModifiedTime.Default.(func() time.Time)
+	// postDescIsDraft is the schema descriptor for is_Draft field.
+	postDescIsDraft := postFields[6].Descriptor()
+	// post.DefaultIsDraft holds the default value on creation for the is_Draft field.
+	post.DefaultIsDraft = postDescIsDraft.Default.(bool)
 }

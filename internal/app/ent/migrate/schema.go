@@ -41,7 +41,7 @@ var (
 	PostsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "title", Type: field.TypeString, Unique: true},
-		{Name: "body", Type: field.TypeString},
+		{Name: "body", Type: field.TypeString, SchemaType: map[string]string{"mysql": "longtext"}},
 		{Name: "created_time", Type: field.TypeTime},
 		{Name: "modified_time", Type: field.TypeTime},
 		{Name: "excerpt", Type: field.TypeString, Nullable: true},

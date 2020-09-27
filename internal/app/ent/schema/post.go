@@ -3,6 +3,8 @@ package schema
 import (
 	"time"
 
+	"github.com/facebook/ent/dialect"
+
 	"github.com/facebook/ent"
 	"github.com/facebook/ent/schema/edge"
 	"github.com/facebook/ent/schema/field"
@@ -17,7 +19,9 @@ type Post struct {
 func (Post) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("title").Unique(),
-		field.String("body"),
+		field.String("body").SchemaType(map[string]string{
+			dialect.MySQL: "longtext",
+		}),
 		field.Time("created_time").Default(time.Now),
 		field.Time("modified_time").Default(time.Now),
 		field.String("excerpt").Optional(),

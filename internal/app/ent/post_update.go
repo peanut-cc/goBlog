@@ -102,6 +102,14 @@ func (pu *PostUpdate) SetIsDraft(b bool) *PostUpdate {
 	return pu
 }
 
+// SetNillableIsDraft sets the is_Draft field if the given value is not nil.
+func (pu *PostUpdate) SetNillableIsDraft(b *bool) *PostUpdate {
+	if b != nil {
+		pu.SetIsDraft(*b)
+	}
+	return pu
+}
+
 // SetCategoryID sets the category edge to Category by id.
 func (pu *PostUpdate) SetCategoryID(id int) *PostUpdate {
 	pu.mutation.SetCategoryID(id)
@@ -447,6 +455,14 @@ func (puo *PostUpdateOne) SetAuthor(s string) *PostUpdateOne {
 // SetIsDraft sets the is_Draft field.
 func (puo *PostUpdateOne) SetIsDraft(b bool) *PostUpdateOne {
 	puo.mutation.SetIsDraft(b)
+	return puo
+}
+
+// SetNillableIsDraft sets the is_Draft field if the given value is not nil.
+func (puo *PostUpdateOne) SetNillableIsDraft(b *bool) *PostUpdateOne {
+	if b != nil {
+		puo.SetIsDraft(*b)
+	}
 	return puo
 }
 

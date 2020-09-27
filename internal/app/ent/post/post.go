@@ -75,4 +75,6 @@ var (
 	DefaultCreatedTime func() time.Time
 	// DefaultModifiedTime holds the default value on creation for the modified_time field.
 	DefaultModifiedTime func() time.Time
+	// DefaultIsDraft holds the default value on creation for the is_Draft field.
+	DefaultIsDraft bool
 )
