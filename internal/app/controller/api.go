@@ -71,8 +71,7 @@ func apiBlog(c *gin.Context) {
 	bTitle := c.PostForm("bTitle")
 	beian := c.PostForm("beiAn")
 	subTitle := c.PostForm("subTitle")
-	copyRight := c.PostForm("beiAn")
-	if blogName == "" || bTitle == "" || copyRight == "" {
+	if blogName == "" || bTitle == "" {
 		responseNotice(c, NOTICE_NOTICE, "参数错误", "")
 		return
 	}
@@ -86,13 +85,16 @@ func apiBlog(c *gin.Context) {
 		SetBlogName(blogName).
 		SetBeian(beian).SetBtitle(bTitle).
 		SetSubtitle(subTitle).
-		SetBeian(beian).
 		Save(c)
 	if err != nil {
 		logger.Errorf(c, "blog info update error:%v", err.Error())
 		responseNotice(c, NOTICE_NOTICE, err.Error(), "")
 		return
 	}
+	global.BlogInfo.BlogName = blogName
+	global.BlogInfo.BTitle = bTitle
+	global.BlogInfo.BeiAn = beian
+	global.BlogInfo.SubTitle = subTitle
 	responseNotice(c, NOTICE_NOTICE, "更新成功", "")
 }
 
@@ -173,6 +175,7 @@ func apiPostAdd(c *gin.Context) {
 	oldPost, err := global.EntClient.Post.Query().Where(post.TitleEQ(title)).Only(c)
 	if err == nil {
 		// 已经存在的文章
+		oldPost.Update().SetBody(text).Save(c)
 		UpdateMultiTags(c, tags, oldPost.ID)
 		if utils.CheckBool(update) {
 			oldPost.Update().SetModifiedTime(time.Now()).Save(c)

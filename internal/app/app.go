@@ -145,10 +145,11 @@ func loadAdminUser(ctx context.Context) {
 
 	// load blog info
 	// TODO 关于这里的异常判断可以处理的更加合理
-	_, err = global.EntClient.Blog.Query().First(ctx)
+	var blog *ent.Blog
+	blog, err = global.EntClient.Blog.Query().First(ctx)
 	if err != nil {
 		logger.Errorf(ctx, "Query blog info err:%v ", err.Error())
-		global.EntClient.Blog.Create().
+		blog, _ = global.EntClient.Blog.Create().
 			SetDefaultPageNum(config.C.Blog.DefaultPageNum).
 			SetBlogName(config.C.Blog.BlogName).
 			SetBtitle(config.C.Blog.BTitle).
@@ -157,6 +158,13 @@ func loadAdminUser(ctx context.Context) {
 			SetBeian(config.C.Blog.BeiAn).
 			Save(ctx)
 	}
+	global.BlogInfo.BlogName = blog.BlogName
+	global.BlogInfo.DefaultPageNum = blog.DefaultPageNum
+	global.BlogInfo.BTitle = blog.Btitle
+	global.BlogInfo.CopyRight = blog.CopyRight
+	global.BlogInfo.BeiAn = blog.Beian
+	global.BlogInfo.SubTitle = blog.Subtitle
+
 }
 
 func Run(ctx context.Context, opts ...Option) error {

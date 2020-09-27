@@ -9,7 +9,7 @@
                 <img class="profile-avatar" src="//st.deepzz.com/static/img/avatar.png" alt="{{.BlogInfo.BlogName}}" />
             </p>
             <h2>{{.BlogInfo.BlogName}}</h2>
-            <p>{{.BlogInfo.Subtitle}}</p>
+            <p>{{.BlogInfo.SubTitle}}</p>
             <p>最后登录: {{dateformat .Account.LoginTime "2006/01/02 15:04"}}</p>
         </div>
         <div class="col-mb-12 col-tb-6 col-tb-offset-1 typecho-content-panel" role="form">
@@ -61,7 +61,7 @@
                         <li>
                             <label class="typecho-label" for="blog-0-2">
                                 标题显示 *</label>
-                            <input id="blog-0-2" name="bTitle" type="text" class="text" value="{{.BlogInfo.Btitle}}" />
+                            <input id="blog-0-2" name="bTitle" type="text" class="text" value="{{.BlogInfo.BTitle}}" />
                             <p class="description">
                                 用于所有页面的title组成, 如: Deepzz's Blog</p>
                         </li>
@@ -70,7 +70,7 @@
                         <li>
                             <label class="typecho-label" for="blog-0-3">
                                 个人格言</label>
-                            <input id="blog-0-3" name="subTitle" type="text" class="text" value="{{.BlogInfo.Subtitle}}" />
+                            <input id="blog-0-3" name="subTitle" type="text" class="text" value="{{.BlogInfo.SubTitle}}" />
                             <p class="description">
                                 简介或格言, 如: 生活百般滋味, 人生需要笑对.</p>
                         </li>
@@ -79,7 +79,7 @@
                         <li>
                             <label class="typecho-label" for="blog-0-4">
                                 备案号</label>
-                            <input id="blog-0-4" name="beiAn" type="text" class="text" value="{{.BlogInfo.Beian}}" />
+                            <input id="blog-0-4" name="beiAn" type="text" class="text" value="{{.BlogInfo.BeiAn}}" />
                             <p class="description">
                                 用于底部显示, 不添加则不显示, 如: 蜀 ICP 备 16021362 号</p>
                         </li>

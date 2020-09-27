@@ -77,26 +77,18 @@ func HandleProfile(c *gin.Context) {
 		c.Redirect(http.StatusFound, "/admin/login")
 		return
 	}
-	blogInfo := global.EntClient.Blog.Query().FirstX(c)
-
 	c.Status(http.StatusOK)
 	RenderHTMLBack(c, "admin-profile", gin.H{
 		"Console":  true,
 		"Path":     c.Request.URL.Path,
 		"Title":    "个人配置 | " + config.C.Blog.BTitle,
 		"Account":  admin,
-		"BlogInfo": blogInfo,
+		"BlogInfo": global.BlogInfo,
 	})
 }
 
 func HandlePost(c *gin.Context) {
 	h := gin.H{}
-	blogInfo, err := global.EntClient.Blog.Query().First(c)
-	if err != nil {
-		logger.Errorf(c, "ent orm query blog info error:%v", err.Error())
-		c.Redirect(http.StatusFound, "/admin/manage-posts")
-		return
-	}
 	id, err := strconv.Atoi(c.Query("cid"))
 	if err == nil && id > 0 {
 		post, err2 := global.EntClient.Post.Query().WithCategory().Where(ipost.IDEQ(id)).Only(c)
@@ -106,7 +98,7 @@ func HandlePost(c *gin.Context) {
 			c.Redirect(http.StatusFound, "/admin/manage-posts")
 			return
 		}
-		h["Title"] = "编辑文章 | " + blogInfo.Btitle
+		h["Title"] = "编辑文章 | " + global.BlogInfo.BTitle
 		h["Edit"] = post
 		var postTags []string
 		for _, tag := range post.QueryTags().AllX(c) {
@@ -115,7 +107,7 @@ func HandlePost(c *gin.Context) {
 		h["PostTags"] = postTags
 	}
 	if h["Title"] == nil {
-		h["Title"] = "撰写文章 | " + blogInfo.Btitle
+		h["Title"] = "撰写文章 | " + global.BlogInfo.BTitle
 	}
 	tags, err := global.EntClient.Tag.Query().All(c)
 	if err != nil {
@@ -141,7 +133,6 @@ func HandlePost(c *gin.Context) {
 // post list
 func HandlePosts(c *gin.Context) {
 	h := gin.H{}
-	blogInfo, err := global.EntClient.Blog.Query().First(c)
 	tmp := c.Query("serie")
 	se, err := strconv.Atoi(tmp)
 	if err != nil {
@@ -162,7 +153,7 @@ func HandlePosts(c *gin.Context) {
 
 	var allPostQuery *ent.PostQuery
 	if se > 0 {
-		allPostQuery =  global.EntClient.Post.Query().WithCategory().Where(ipost.HasCategoryWith(category.IDEQ(se)))
+		allPostQuery = global.EntClient.Post.Query().WithCategory().Where(ipost.HasCategoryWith(category.IDEQ(se)))
 	} else {
 		allPostQuery = global.EntClient.Post.Query().WithCategory()
 	}
@@ -195,7 +186,7 @@ func HandlePosts(c *gin.Context) {
 	categories := global.EntClient.Category.Query().AllX(c)
 	h["Console"] = true
 	h["Path"] = c.Request.URL.Path
-	h["Title"] = "个人配置 | " + blogInfo.Btitle
+	h["Title"] = "个人配置 | " + global.BlogInfo.BTitle
 	h["Categories"] = categories
 	h["Posts"] = perPosts
 	h["PostCount"] = len(allPosts)
@@ -207,16 +198,10 @@ func HandlePosts(c *gin.Context) {
 }
 
 func HandleCategories(c *gin.Context) {
-	blogInfo, err := global.EntClient.Blog.Query().First(c)
-	if err != nil {
-		logger.Errorf(c, "ent orm query blog info error:%v", err.Error())
-		c.Redirect(http.StatusFound, "/admin/profile")
-		return
-	}
 	h := gin.H{}
 	h["Manage"] = true
 	h["Path"] = c.Request.URL.Path
-	h["Title"] = "专题管理 | " + blogInfo.Btitle
+	h["Title"] = "专题管理 | " + global.BlogInfo.BTitle
 	categories, err := global.EntClient.Category.Query().WithPosts().All(c)
 	if err != nil {
 		logger.Errorf(c, "ent orm query category info error:%v", err.Error())
@@ -230,22 +215,16 @@ func HandleCategories(c *gin.Context) {
 
 func HandleCategory(c *gin.Context) {
 	id, err := strconv.Atoi(c.Query("mid"))
-	blogInfo, err := global.EntClient.Blog.Query().First(c)
-	if err != nil {
-		logger.Errorf(c, "ent orm query blog info error:%v", err.Error())
-		c.Redirect(http.StatusFound, "/admin/manage-series")
-		return
-	}
 	h := gin.H{}
 	category, err := global.EntClient.Category.Get(c, id)
 	if ent.IsNotFound(err) {
-		h["Title"] = "新增分类 | " + blogInfo.Btitle
+		h["Title"] = "新增分类 | " + global.BlogInfo.BTitle
 	} else if err != nil {
 		logger.Errorf(c, "ent orm query category error:%v", err.Error())
 		c.Redirect(http.StatusFound, "/admin/manage-series")
 		return
 	} else {
-		h["Title"] = "编辑分类 | " + blogInfo.Btitle
+		h["Title"] = "编辑分类 | " + global.BlogInfo.BTitle
 		h["Category"] = category
 	}
 	h["Manage"] = true
@@ -256,12 +235,6 @@ func HandleCategory(c *gin.Context) {
 
 func HandleTags(c *gin.Context) {
 	h := gin.H{}
-	blogInfo, err := global.EntClient.Blog.Query().First(c)
-	if err != nil {
-		logger.Errorf(c, "ent orm query blog info error:%v", err.Error())
-		c.Redirect(http.StatusFound, "/admin/manage-series")
-		return
-	}
 	tags, err := global.EntClient.Tag.Query().All(c)
 	if err != nil {
 		logger.Errorf(c, "ent orm query blog info error:%v", err.Error())
@@ -270,12 +243,11 @@ func HandleTags(c *gin.Context) {
 	}
 	h["Manage"] = true
 	h["Path"] = c.Request.URL.Path
-	h["Title"] = "标签管理 | " + blogInfo.Btitle
+	h["Title"] = "标签管理 | " + global.BlogInfo.BTitle
 	h["Tags"] = tags
 	c.Status(http.StatusOK)
-	RenderHTMLBack(c, "admin-tags", h)	
+	RenderHTMLBack(c, "admin-tags", h)
 }
-
 
 // 渲染 html
 func RenderHTMLBack(c *gin.Context, name string, data gin.H) {
